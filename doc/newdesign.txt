@@ -1,0 +1,35 @@
+ strip back language features, hide the old code, and bring
+clean edits of it back in as needed to get a working language. 
+ 
+By clean edits, I mean to 
+- stricly ban the use of struct members outside of their defining compile unit. 
+- track down side effects before admitting code
+- make sure it fits my code formatting preferences
+
+The parts I want to work are:
+
+- functions and local variables
+- the fundamental types number, decimal, string
+- the builtin facility and (most or all of) the functions we built
+- lists: functions should take a list as argument and return a list
+
+Function definitions are of the form:
+TO name [[THE typename param1] AND THE typename2 param2 ...] MEANS statement. 
+
+When a function is invoked, its single argument is a list. That list is
+available inside the function as a list variable named "arguments".
+
+
+statement include 
+	if statement
+	while statement
+	assignment
+	DO statement. [statement ...] DONE.
+	funcdef
+	call function
+
+`return` with 0 or 1 arguments builds an empty or 1-item list.  The general
+format is: 
+`return` *arg1* [`AND` *arg2* [`AND` *arg3* [...]]]. 
+
+

@@ -1,0 +1,4 @@
+#!/bin/bash
+# run-tests.sh
+test=${1}
+(cat "$test" ; ./means "$test" 2>&1 ) | xcat

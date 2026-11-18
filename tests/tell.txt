@@ -1,0 +1,15 @@
+A counter is a thing with
+	the count is 0.
+	TO increment MEANS DO
+		the count is the count plus 1.
+	DONE.
+	TO get MEANS DO
+		return the count.
+	DONE.
+DONE.
+the c is a counter.
+tell the c to increment.
+tell the c to increment.
+tell the c to increment.
+print tell the c to get.
+#3

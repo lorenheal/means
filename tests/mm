@@ -1,0 +1,20 @@
+#!/bin/bash
+flags=${2}
+tst=${1}
+if [ ! -f ${tst} ]; then
+	tst="${1}.m"
+fi
+if [ -f ${tst} ]; then
+	{
+	grep "^#" $tst | sed 's/^#//' > ${tst%.m}.expected 
+	cat "$tst"; 
+	echo "=== EXPECTED ==="; 
+	cat "${tst%.m}.expected"; 
+	echo "=== ACTUAL ==="; 
+	../means $flags -f "$tst"
+	} 2>&1 | xcat
+fi
+rm -f ${tst%.m}.expected
+
+
+

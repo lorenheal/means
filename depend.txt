@@ -1,0 +1,92 @@
+Here is a dependency-safe include map based on the modules we have been building. Each header is self-contained; each `.c` includes its own header plus only what it actually uses.
+
+**ast.h**  
+`#include "symtab.h"`  
+`#include "value.h"`  
+`#include "params.h"`  
+`#include <stddef.h>`
+
+**ast.c**  
+`#include "ast.h"`  
+`#include "func.h"`  
+`#include <stdlib.h>`  
+`#include <string.h>`
+
+**func.h**  
+`#include "symtab.h"`  
+`#include "ast.h"`  
+`#include "params.h"`  
+`#include "value.h"`
+
+**func.c**  
+`#include "func.h"`  
+`#include "params.h"`  
+`#include <stdlib.h>`  
+`#include <string.h>`
+
+**help.h**  
+`#include <stdio.h>`
+
+**help.c**  
+`#include "help.h"`  
+`#include <stdio.h>`  
+`#include <stdlib.h>`  
+`#include <string.h>`
+
+**mstring.h**  
+`#include <stddef.h>`
+
+**mstring.c**  
+`#include "mstring.h"`  
+`#include <stdlib.h>`  
+`#include <string.h>`
+
+**meanslist.h**  
+`#include "value.h"`  
+`#include <stddef.h>`
+
+**meanslist.c**  
+`#include "meanslist.h"`  
+`#include <stdlib.h>`
+
+**symlist.h**  
+`#include "symtab.h"`  
+`#include <stddef.h>`
+
+**symlist.c**  
+`#include "symlist.h"`  
+`#include <stdlib.h>`
+
+**symtab.h**  
+`#include "value.h"`  
+`#include <stddef.h>`
+
+**symtab.c**  
+`#include "symtab.h"`  
+`#include <stdlib.h>`  
+`#include <string.h>`
+
+**value.h**  
+`#include <stddef.h>`
+
+**value.c**  
+`#include "value.h"`  
+`#include <stdlib.h>`  
+`#include <string.h>`
+
+**means.y** (or means.c if you factor the actions)  
+`#include "ast.h"`  
+`#include "func.h"`  
+`#include "symtab.h"`  
+`#include "params.h"`  
+`#include "value.h"`  
+`#include <stdio.h>`  
+`#include <stdlib.h>`  
+`#include <string.h>`
+
+Notes  
+- `value.h` is the lowest-level header; everything else may include it, it includes nothing local.  
+- `symtab.h` depends only on `value.h`.  
+- `params.h` depends only on `value.h` (for `enum vtype`).  
+- `func.h` is allowed to see `ast.h` because a function holds a `struct stmt *`; `ast.c` includes `func.h` only for the creation helpers.  
+- No header includes a `.c` file’s private helpers, and no pair of headers includes each other.

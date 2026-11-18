@@ -1,0 +1,17 @@
+#!/bin/bash
+for tst in tests/*.m; do
+	expected="${tst%.m}.expected"
+	grep "^#" $tst | sed 's/^#//' > $expected 
+	if [ -f ${expected} ] ; then
+		actual=$(./means -f "$tst" 2>&1)
+		if [ "$actual" == "$(cat "$expected")" ]; then
+			echo "PASS: $tst"
+		else
+			echo "FAIL: $tst"
+			diff <(echo "$actual") "$expected"
+		fi
+	fi
+	rm -f $expected
+done
+
+

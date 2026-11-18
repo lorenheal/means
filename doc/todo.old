@@ -1,0 +1,115 @@
+- Testing harness rigor
+x Add a loop construct
+- Code cleanup:
+x-- remove dead stuff (like params)
+x-- move to ADT where needed
+x-- combine identical code 
+--- drop paraminfo and do whatever this means at some point:
+	Optional next step
+		When you are ready to drop struct paraminfo entirely,
+		change the helper to append straight into a struct
+		func’s params array (via params_add) and make
+		paramlist return that struct func * (or just the filled
+		params). funcdef then stops copying. The grammar shape
+		above stays the same.
+
+x Add lists: head, rest, append, etc.
+x append and insert
+X 
+x string overloading of list functions
+x empty() write it in means.
+- nested lists
+x list literal edge cases: Empty list (list builtin or 0 and nothing), single element
+- struct types and nouns with internal functions
+x 'of' keyword for strings/arrays/list "first 3 of [list]" 
+- external functions via 'external' builtin or keyword (save for codegen)
+list functions work on (char *) string type:
+xfirst one-character string
+xrest	copy of tail
+xlast	one-char string
+xlength	integer character count 
+-find : index or -1
+xsplit truncates the orginal at index, returns the portion truncated
+xappend	concatenate two strings
+xinsert	prepend a string to another
+-words / split split on whitespace to T_LIST of strings
+-join	list of string -> one string, separator optional.
+
+Move to mstring:
+
+1. Bridge (now)
+Keep both fields. Add two helpers and use only those at the edges:
+Cstruct mstring *value_mstring(struct value v);   /* sval → mstring if needed */
+const char    *value_cstr(struct value v);       /* mval ? mval->data : sval */
+
+value_cstr is what printf, strlen, and C library calls use.
+New code writes mval only.
+Old code that still sets sval continues to work.
+
+2. Move the producers
+Change the places that create strings, one group at a time, to allocate an mstring and set mval:
+
+The STRING literal production.
+value_copy / value_free (refcount on mval; still accept a non-NULL sval during the transition).
+Builtins that return strings (first, rest, join, strcat, \ldots).
+xfirst one-character string
+xrest	copy of tail
+xlast	one-char string
+xlength	integer character count 
+-find : index or -1
+xsplit truncates the orginal at index, returns the portion truncated
+xappend	concatenate two strings
+xinsert	prepend a string to another
+-words / split split on whitespace to T_LIST of strings
+-join	list of string -> one string, separator optional.
+
+After each group, run the tests. value_print should print mval->data if present, else sval.
+3. Move the consumers, then delete
+Grep for sval. Each hit is either:
+
+a read → switch to value_cstr(v), or
+a write → switch to an mstring allocation into mval.
+
+When the grep is empty, remove sval from struct value and drop the bridge’s sval branch.
+
+- No raw mval / sval outside mstring.c and value_*.  Callers use only:
+x mstring_new(const char *s);
+x mstring_incref(struct mstring *s);
+x mstring_decref(struct mstring *s);
+x mstring_cstr(const struct mstring *s);
+x mstring_len(const struct mstring *s);
+x mstring_trunc(struct mstring *s, int n);   /* split */
+x mstring_append(struct mstring *s, const char *extra);
+
+
+-first one-character string
+-rest	copy of tail
+-last	one-char string
+xlength	integer character count 
+-find : index or -1
+-split truncates the orginal at index, returns the portion truncated
+-append	concatenate two strings
+-insert	prepend a string to another
+-words / split split on whitespace to T_LIST of mstrings
+-join	list of mstring -> one mstring, separator optional.
+
+help() and compiler command line 
+means language command line handling
+diagnose()
+- diagnose(severity, area, line, col, fmt, \ldots) — errors always
+  print and increment a count; debug prints only if the area bit is set.
+  yyerror and the runtime “undefined” paths call it.  main returns
+  non-zero if the count is non-zero. One exit point.  Optional: print the
+  offending line with a caret. Column can wait if you do not have it yet.
+
+recursion stack checker segfault fix
+	:A depth counter or a SIGSEGV handler via
+	sigaction that turns the overflow into a diagnose and a clean exit
+
+Code generation
+- C
+- LLVM intermediate code
+- Gimple
+- ARM assembly
+- flat means (whatever that is).
+Code gen MAKES keyword.
