@@ -10,11 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 
-struct param_desc {
-    const char *name;
-    enum vtype  type;
-};
-
 
 struct builtin_desc
 	{
@@ -22,7 +17,7 @@ struct builtin_desc
 	struct value (*fn)(struct scope *);  /* implementation; pulls args from scope */
 	int param_count;                     /* exact arity when is_rest == 0; ignored when is_rest == 1 */
 	int is_rest;                         /* 1 = accept any number of args (pure rest) */
-	const struct param_desc *params;     /* array of length param_count, or NULL */
+	const enum vtype *types;     /*  NULL */
 	};
 
 /* forward declarations — new signature */
@@ -57,88 +52,54 @@ static const enum vtype ty_int_mstr[]  = { T_NUMBER, T_WORD };
 static const enum vtype ty_mstr_list[] = { T_WORD, T_LIST };
 */
 
+static const enum vtype ty_1_any[]         = { T_ANY };
+static const enum vtype ty_1_list[]        = { T_LIST };
+static const enum vtype ty_1_word[]        = { T_WORD };
+static const enum vtype ty_1_number[]      = { T_NUMBER };
+
+static const enum vtype ty_2_any_list[]    = { T_ANY, T_LIST };
+static const enum vtype ty_2_word_word[]   = { T_WORD, T_WORD };
+static const enum vtype ty_2_word_list[]   = { T_WORD, T_LIST };
+static const enum vtype ty_2_number_word[] = { T_NUMBER, T_WORD };
+
+
 static const struct builtin_desc builtins[] =
-	{
-	/* pure-rest / unchecked */
-		{ "print",  builtin_print,  0, 1, NULL }, /* returns number of items printed */
-		{ "space",  builtin_space,  0, 1, NULL }, /* returns ' ' */
-		{ "newline", builtin_newline,  0, 1, NULL }, /* returns '\n' */
-		{ "empty", builtin_empty,  0, 1, NULL }, /* returns empty list */
-		  /* fixed-arity */
-    { "length", builtin_length, 1, 0,
-      (struct param_desc[]){ { "item", T_ANY } } },
-
-    { "find",   builtin_find,   2, 0,
-      (struct param_desc[]){ { "needle", T_ANY }, { "haystack", T_LIST } } },
-    { "find",   builtin_find,   2, 0,
-      (struct param_desc[]){ { "needle", T_WORD }, { "haystack", T_WORD } } },
-
-	/*   { "read",   builtin_read,   0, 1, NULL }, */ /* returns 1-item list with line of text */
-	/*   { "roll",   builtin_roll,   0, 1, NULL }, */ /* returns its arguments as a (multilevel) list */
-	/**/
-	/* single-argument overloads */
-	/*    { "first",  builtin_first,  1, 0, ty_list }, */
-	/*    { "first",  builtin_first,  1, 0, ty_mstring }, */
-	/*    { "rest",   builtin_rest,   1, 0, ty_list }, */
-	/*    { "rest",   builtin_rest,   1, 0, ty_mstring }, */
-	/*    { "split",  builtin_split,  1, 0, ty_list }, */
-	/*    { "split",  builtin_split,  1, 0, ty_mstring }, */
-	/*    { "split",  builtin_split,  2, 0, \ldots }, */
-	/*    { "last",   builtin_last,   1, 0, ty_list }, */
-	/*    { "last",   builtin_last,   1, 0, ty_mstring }, */
-	/*    { "length", builtin_length, 1, 0, ty_mstring }, */
-	/*    { "pop",    builtin_pop,    1, 0, ty_list }, */
-	/**/
-	    /* two-argument overloads */
-	/* example of a typed one:
-    { "append",  builtin_append,  2, 0,
-      (struct param_desc[]){ {"list", T_LIST}, {"item", T_ANY} } }, */
-	/*    { "insert", builtin_insert, 2, 0, ty_any_list }, */
-	/*    { "insert", builtin_insert, 2, 0, ty_mstr_mstr }, */
-	/*    { "push",   builtin_push,   2, 0, ty_any_list }, */
-	/*    { "join",   builtin_join,   2, 0, ty_mstr_list }, */
-	/*    { "join", builtin_join, 2, 0, ty_mstr_mstr }, */
-	/**/
-	/*    { "exit",   builtin_exit,   1, 0, ty_int }, */
-	/*    { "exit",   builtin_exit,   2, 0, ty_int_mstr }, */
-	/**/
-		{ NULL, NULL, 0, 0, NULL }
-	};
+    {
+    { "print",   builtin_print,   0, 1, NULL },
+    { "space",   builtin_space,   0, 1, NULL },
+    { "newline", builtin_newline, 0, 1, NULL },
+    { "empty",   builtin_empty,   0, 1, NULL },
+    { "length",  builtin_length,  1, 0, ty_1_any },
+    { "find",    builtin_find,    2, 0, ty_2_any_list },
+    { "find",    builtin_find,    2, 0, ty_2_word_word },
+    { NULL, NULL, 0, 0, NULL }
+    };
 
 void register_builtins(struct scope *global)
-	{
-	const struct builtin_desc *b;
-	for (b = builtins; b->name; b++)
-		{
-		struct func *f = func_create_builtin(b->name, global, b->fn, b->is_rest);
-		if (b->param_count > 0 && b->params)
-			{
-			int i;
-			for (i = 0; i < b->param_count; i++)
-				{
-				struct value v = Value_Empty();
-				v.vtype = b->params[i].type;
-				func_add_param(f, b->params[i].name, v);
-				}
-			}
-		sym_define_function(b->name, f, global);
-		}
-	}
-
-int namecheck(const char *funcname, int pos, const char *name, enum vtype type)
-	{
-	const struct builtin_desc *b;
-	for (b = builtins; b->name; b++)
-		{
-		if (strcmp(b->name, funcname) != 0)
-			continue;
-		if (pos < 0 || pos >= b->param_count)
-			return 0;
-		return strcmp(b->params[pos].name, name) == 0
-		       && b->params[pos].type == type;
-		}
-	return 0;
-	}
+    {
+    const struct builtin_desc *b;
+    for (b = builtins; b->name; b++)
+        {
+        struct func *f = func_create_builtin(b->name, global, b->fn, b->is_rest);
+        if (b->param_count > 0 && b->types)
+            {
+            int i;
+            if (b->param_count > MAX_PARAMS)
+                diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0,
+                         "%s: too many parameters (%d > %d)",
+                         b->name, b->param_count, MAX_PARAMS);
+            for (i = 0; i < b->param_count; i++)
+                {
+                char namebuf[32];
+                struct value v = Value_Empty();
+                v.vtype = b->types[i];
+                snprintf(namebuf, sizeof namebuf, "_%.18s_%d", f->name, i + 1);
+                func_add_param(f, namebuf, v);
+                }
+            }
+        sym_define_function(b->name, f, global);
+        }
+    }
 
 static struct list *get_arguments(struct scope *scope)
 	{
@@ -183,7 +144,7 @@ builtin_print(struct scope *scope)
 
 if (!namecheck("append", 0, "list", T_LIST) ||
     !namecheck("append", 1, "item", T_ANY))
-    diagnose(DIAG_ERROR, DBG_BUILTINS, 0, 0,
+    diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0,
              "append: parameter table does not match implementation");
 */
 

@@ -7,6 +7,8 @@
 #include "symtab.h"
 #include "func.h"
 
+#define MAX_PARAMS 1000
+
 struct expr;
 
 struct param {

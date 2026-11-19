@@ -3,56 +3,67 @@
 #include "value.h"
 #include "symtab.h"
 #include "func.h"
+#include "exec.h"
 #include "help.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 struct param *param_new(const char *name, struct value init)
-{
-    struct param *p = calloc(1, sizeof *p);
-    if (!p)
+	{
+	struct param *p = calloc(1, sizeof *p);
+	if (!p)
 		{
 		diagnose(DIAG_ERROR, DBG_PARAMS, 0,0,"memory alloc fail in param_new");
-        return NULL;
+		return NULL;
 		}
-    p->name = strdup(name);
+	p->name = strdup(name);
 	p->vtype = init.vtype;
-    p->init = Value_Copy(init);   /* store the compile-time value */
-    p->next = NULL;
-    return p;
-}
+	p->init = Value_Copy(init);   /* store the compile-time value */
+	p->next = NULL;
+	return p;
+	}
 
 struct param *param_append(struct param *list, const char *name, struct value init)
-{
-    struct param *p = param_new(name, init);
-    if (!list)
-        return p;
-    struct param *tail = list;
-    while (tail->next)
-        tail = tail->next;
-    tail->next = p;
-    return list;
-}
+	{
+	struct param *p = param_new(name, init);
+	if (!list)
+		return p;
+	struct param *tail = list;
+	while (tail->next)
+		tail = tail->next;
+	tail->next = p;
+	return list;
+	}
 
 struct param *param_from_decl(const char *name, struct expr *e, struct scope *scope)
 	{
-	int is_rest = (e->etype == EV_CALL && e->name &&
+	int is_rest = (e && e->etype == EV_CALL && e->name &&
 	               !e->args && strcmp(e->name, "rest") == 0);
+
 	struct value v = is_rest
 	                 ? Value_List(list_new())
 	                 : eval_expr(e, scope);
-    struct param *p = param_new(name, v);
-    if (is_rest)
-        p->is_rest = 1;
-    return p;
+
+	struct param *p = param_new(name, v);
+	if (p && is_rest)
+		p->is_rest = 1;
+	return p;
 	}
 
 struct param *param_append_from_decl(struct param *list, const char *name,
                                      struct expr *e, struct scope *scope)
 	{
 	struct param *p = param_from_decl(name, e, scope);
-	return param_append(list, p);
+	if (!p)
+		return list;
+	if (!list)
+		return p;
+	struct param *tail = list;
+	while (tail->next)
+		tail = tail->next;
+	tail->next = p;
+	return list;
 	}
 
 void
@@ -118,71 +129,73 @@ arglist_free(struct argnode *list)
 
 match_result
 params_match(const struct func *f, struct value *argv, int argc)
-{
-    const struct param *p;
-    int i, fixed;
+	{
+	const struct param *p;
+	int i, fixed;
 
-    if (!f)
-        return MATCH_NULL_FUNC;
+	if (!f)
+		return MATCH_NULL_FUNC;
 
-    fixed = func_param_count(f);
-    if (argc < fixed)
-        return MATCH_TOO_FEW;
-    if (argc > fixed && !func_is_rest(f))
-        return MATCH_TOO_MANY;
+	fixed = func_param_count(f);
+	if (argc < fixed)
+		return MATCH_TOO_FEW;
+	if (argc > fixed && !func_is_rest(f))
+		return MATCH_TOO_MANY;
 
-    for (p = f->params, i = 0; p && i < fixed; p = p->next, i++) {
-        enum vtype want = p->vtype;
-        struct value got;
+	for (p = f->params, i = 0; p && i < fixed; p = p->next, i++)
+		{
+		enum vtype want = p->vtype;
+		struct value got;
 
-        if (want == T_UNTYPED || want == T_ANY)
-            continue;
+		if (want == T_UNTYPED || want == T_ANY)
+			continue;
 
-        got = argv[i];
-        if (want != T_LIST
-            && Value_IsList(got)
-            && list_length(Value_AsList(got)) == 1)
-            got = list_first(Value_AsList(got));
+		got = argv[i];
+		if (want != T_LIST
+		        && Value_IsList(got)
+		        && list_length(Value_AsList(got)) == 1)
+			got = list_first(Value_AsList(got));
 
-        if (want != Value_Type(got)) {
-            diagnose(DIAG_DEBUG, DBG_PARAMS, 0, 0,
-                     "type mismatch want %d got %d",
-                     want, Value_Type(got));
-            return MATCH_TYPE_MISMATCH;
-        }
-    }
-    return MATCH_OK;
-}
+		if (want != Value_Type(got))
+			{
+			diagnose(DIAG_DEBUG, DBG_PARAMS, 0, 0,
+			         "type mismatch want %d got %d",
+			         want, Value_Type(got));
+			return MATCH_TYPE_MISMATCH;
+			}
+		}
+	return MATCH_OK;
+	}
 
 void
 report_match_failure(const char *name, match_result mr,
                      const struct func *f, int argc)
-{
+	{
 	int need = f ? func_param_count(f) : 0;
 
-    switch (mr) 
-	{
-    case MATCH_TOO_FEW:
-        diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-                 "%s: too few arguments (got %d, need %d)",
-                 name, argc, need);
-        break;
-    case MATCH_TOO_MANY:
-        diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-                 "%s: too many arguments (got %d, need %d)",
-                 name, argc, need);
-        break;
-    case MATCH_TYPE_MISMATCH:
-        diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-                 "%s: argument type mismatch", name);
-        break;
-    case MATCH_NULL_FUNC:
-    default:
-        diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-                 "undefined function: %s", name);
-        break;
-    }
-}
+	switch (mr)
+		{
+		case MATCH_TOO_FEW:
+			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
+			         "%s: too few arguments (got %d, need %d)",
+			         name, argc, need);
+			break;
+		case MATCH_TOO_MANY:
+			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
+			         "%s: too many arguments (got %d, need %d)",
+			         name, argc, need);
+			break;
+		case MATCH_TYPE_MISMATCH:
+			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
+			         "%s: argument type mismatch", name);
+			break;
+		case MATCH_NULL_FUNC:
+		default:
+			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
+			         "undefined function: %s", name);
+			break;
+		}
+	}
 
 void
 bind_fixed_params(struct func *f, struct value arguments, struct scope *scope)
@@ -206,15 +219,15 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope)
 		if (list_isempty(lst))
 			{
 			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-				 "too few arguments for %s", func_name(f));
+			         "too few arguments for %s", func_name(f));
 			return;
 			}
 		v = list_first(lst);
 		want = p->vtype;
 		/* unwrap one-element list for a scalar parameter */
 		if (want != T_UNTYPED && want != T_ANY && want != T_LIST
-		    && Value_IsList(v)
-		    && list_length(Value_AsList(v)) == 1)
+		        && Value_IsList(v)
+		        && list_length(Value_AsList(v)) == 1)
 			{
 			struct value elem = list_first(Value_AsList(v));
 			Value_Free(v);
@@ -223,7 +236,7 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope)
 		if (want != T_UNTYPED && want != T_ANY && want != Value_Type(v))
 			{
 			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-				 "type mismatch for %s", p->name ? p->name : "?");
+			         "type mismatch for %s", p->name ? p->name : "?");
 			Value_Free(v);
 			return;
 			}
