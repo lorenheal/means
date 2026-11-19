@@ -140,7 +140,7 @@ struct value sym_value(struct sym *s)
 	if(s != NULL)
 		ret = s->val;
 	else
-		diagnose(DIAG_ERROR,DBG_SYMTAB,0,0,"NULL sym in sym_value");
+		diagnose(DIAG_DEBUG,DBG_SYMTAB,0,0,"NULL sym in sym_value");
 	return ret;
 	}
 /*

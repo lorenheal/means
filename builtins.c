@@ -27,19 +27,19 @@ static struct value builtin_newline(struct scope *scope);
 static struct value builtin_length(struct scope *);
 static struct value builtin_find(struct scope *);
 static struct value builtin_empty(struct scope *);
+static struct value builtin_exit(struct scope *);
 /*
+static struct value builtin_read(struct scope *);
 static struct value builtin_roll(struct scope *);
 static struct value builtin_first(struct scope *);
 static struct value builtin_rest(struct scope *);
-static struct value builtin_split(struct scope *);
 static struct value builtin_last(struct scope *);
 static struct value builtin_append(struct scope *);
 static struct value builtin_insert(struct scope *);
+static struct value builtin_split(struct scope *);
 static struct value builtin_push(struct scope *);
 static struct value builtin_pop(struct scope *);
 static struct value builtin_join(struct scope *);
-static struct value builtin_exit(struct scope *);
-static struct value builtin_read(struct scope *);
 */
 /* type vectors for the overloads that need them */
 
@@ -61,6 +61,9 @@ static const struct builtin_desc builtins[] =
     { "length",  builtin_length,  1, 0, ty_1_any },
     { "find",    builtin_find,    2, 0, ty_2_any_list },
     { "find",    builtin_find,    2, 0, ty_2_word_word },
+	{ "exit",    builtin_exit,    0, 1, NULL },               /* exit. */
+	{ "exit",    builtin_exit,    1, 0, ty_1_number },        /* exit 1. */
+	{ "exit",    builtin_exit,    2, 0, ty_2_number_word },   /* exit 1 and "msg". */
     { NULL, NULL, 0, 0, NULL }
     };
 
@@ -137,6 +140,30 @@ if (!namecheck("append", 0, "list", T_LIST) ||
              "append: parameter table does not match implementation");
 */
 
+static struct value
+builtin_exit(struct scope *scope)
+    {
+    int code = 0;
+    struct value codev = sym_value(sym_find_in_scope("_exit_1", scope));
+    struct value msgv  = sym_value(sym_find_in_scope("_exit_2", scope));
+
+    if (!Value_IsEmpty(codev) && Value_IsNumber(codev))
+        code = Value_AsNumber(codev);
+
+    if (!Value_IsEmpty(msgv) && Value_IsWord(msgv))
+        diagnose(DIAG_WARNING, DBG_BUILTIN,0,0, "%s\n", mstring_cstr(Value_AsWord(msgv)));
+
+    /*  If changing diagnose(), make a silent EXIT_SUCCESS / EXIT_FAILURE path 
+    *	diagnose(DIAG_FATAL, DBG_EXEC, 0, 0, "exit %d %s", code, msgv); 
+    *	diagnose(DIAG_FATAL, code, 0, 0, "" ); 
+	*/
+
+    exit(code);
+
+    Value_Free(codev);
+    Value_Free(msgv);
+    return Value_Empty();   /* unreachable */
+    }
 
 /*
 static int

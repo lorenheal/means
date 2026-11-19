@@ -195,10 +195,13 @@ void debug_usage(void)
 
 */
 
-/* enum severity { DIAG_DEBUG, DIAG_NOTE, DIAG_WARNING, DIAG_ERROR };*/
+/* enum severity { DIAG_FATAL, DIAG_DEBUG, DIAG_NOTE, DIAG_WARNING, DIAG_ERROR };*/
 
 void diagnose(enum severity sev, unsigned area, int line, int col, const char *fmt, ...)
 	{
+	/* TODO: consider a DIAG_SUCCESS / silent-zero path so every
+   * termination (including clean exit 0 from exit builtin) can go through here.
+   */
 	FILE *out = stdout;
 	if (sev == DIAG_DEBUG && !DEBUG(area))
 		return;                              /* masked debug: silent */
