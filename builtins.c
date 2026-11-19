@@ -42,26 +42,15 @@ static struct value builtin_exit(struct scope *);
 static struct value builtin_read(struct scope *);
 */
 /* type vectors for the overloads that need them */
-/*
-static const enum vtype ty_list[]      = { T_LIST };
-static const enum vtype ty_mstring[]   = { T_WORD};
-static const enum vtype ty_any_list[]  = { T_ANY, T_LIST };
-static const enum vtype ty_mstr_mstr[] = { T_WORD, T_WORD };
-static const enum vtype ty_int[]       = { T_NUMBER };
-static const enum vtype ty_int_mstr[]  = { T_NUMBER, T_WORD };
-static const enum vtype ty_mstr_list[] = { T_WORD, T_LIST };
-*/
 
 static const enum vtype ty_1_any[]         = { T_ANY };
 static const enum vtype ty_1_list[]        = { T_LIST };
 static const enum vtype ty_1_word[]        = { T_WORD };
 static const enum vtype ty_1_number[]      = { T_NUMBER };
-
 static const enum vtype ty_2_any_list[]    = { T_ANY, T_LIST };
 static const enum vtype ty_2_word_word[]   = { T_WORD, T_WORD };
 static const enum vtype ty_2_word_list[]   = { T_WORD, T_LIST };
 static const enum vtype ty_2_number_word[] = { T_NUMBER, T_WORD };
-
 
 static const struct builtin_desc builtins[] =
     {
@@ -187,9 +176,14 @@ static struct value builtin_newline(struct scope *scope)
 static struct value
 builtin_length(struct scope *scope)
 	{
-	struct value item = sym_value(sym_find_in_scope("item", scope)); /* or whatever name you bound */
+	struct value item = sym_value(sym_find_in_scope("_length_1", scope)); 
 	struct value ret  = Value_Empty();
 	/**/
+	if(Value_IsEmpty(item))
+		{
+		diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0, "length of what?");
+		}			 
+	else
 	switch (Value_Type(item))
 		{
 		case T_LIST:
@@ -209,30 +203,35 @@ builtin_length(struct scope *scope)
 
 static struct value
 builtin_find(struct scope *scope)
-	{
-	struct value needle   = sym_value(sym_find_in_scope("needle", scope));
-	struct value haystack = sym_value(sym_find_in_scope("haystack", scope));
-	struct value ret      = Value_Number(-1);
-	/**/
-	switch (Value_Type(haystack))
-		{
-		case T_LIST:
-			ret = Value_Number(list_find(needle,Value_AsList(haystack)));
-			break;
-		case T_WORD:
-			ret = Value_Number(mstring_find(Value_AsWord(haystack),
-			                             Value_AsWord(needle)));
-			break;
-		default:
-			diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0,
-			         "find: unsupported type");
-			break;
-		}
-	Value_Free(needle);
-	Value_Free(haystack);
-	return ret;
-	}
-
+    {
+    struct value needle   = sym_value(sym_find_in_scope("_find_1", scope));
+    struct value haystack = sym_value(sym_find_in_scope("_find_2", scope));
+    struct value ret      = Value_Number(-1);
+    /**/
+    if (Value_IsEmpty(haystack))
+        {
+        diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0, "find: empty haystack");
+        }
+    else
+        switch (Value_Type(haystack))
+            {
+            case T_LIST:
+                ret = Value_Number(TO_MEANS_INDEX(list_find(needle, Value_AsList(haystack))));
+                break;
+            case T_WORD:
+                if (Value_IsWord(needle))
+                    ret = Value_Number(TO_MEANS_INDEX(
+							mstring_find(Value_AsWord(needle), Value_AsWord(haystack))));
+                break;
+            default:
+                diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0,
+                         "find: unsupported type");
+                break;
+            }
+    Value_Free(needle);
+    Value_Free(haystack);
+    return ret;
+    }
 
 /*
 static struct value

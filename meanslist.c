@@ -135,8 +135,8 @@ struct list *list_split(struct list *lst)
 int
 list_find(struct value v, const struct list *lst)
 	{
-	int ret = LIST_FIND_NOT_FOUND;
-	int i = LIST_FIRST_POSITION;
+	int ret = MEANS_NOT_FOUND;
+	int i = 0;
 	if (lst)
 		{
 		for (const struct listnode *n = list_head(lst); n; n = listnode_next(n), i++)
