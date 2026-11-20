@@ -12,6 +12,88 @@ struct value Value_Empty(void)  /* hhh */
 	return ret;
 	}
 
+struct value Value_Copy(struct value v) /* returns owned copy */
+	{
+	if (v.vtype == T_WORD && v.mval)
+		v.mval->refcount++;
+	else if (v.vtype == T_LIST && v.lval)
+		list_incref(v.lval);
+	return v;
+	}
+
+void Value_Free(struct value v) /* hhh */
+	{
+	/* DEBUG: double-free risk if caller also frees */
+	if ((v.vtype == T_WORD) && v.mval)
+		mstring_free(v.mval);
+	else if ((v.vtype == T_LIST) && v.lval)
+		list_decref(v.lval);
+	}
+
+void Value_Print(const struct value *v) /* hhh */
+	{
+	if(v)
+		{
+		switch(v->vtype)
+			{
+			case T_NUMBER :
+				printf("%ld", v->ival);
+				break;
+			case T_DECIMAL:
+				printf("%g", (double)v->fval);
+				break;
+			case T_BOOL:
+				printf("%s", (v->ival ? "true" : "false"));
+				break;
+			case T_WORD:
+				printf("%s", mstring_cstr(v->mval));
+				break;
+			case T_LIST:
+				print_list(v->lval);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+long
+Value_AsNumber(struct value v) /* hhh */
+	{
+	return (v.vtype == T_NUMBER) ? v.ival : 0;
+	}
+
+double
+Value_AsDecimal(struct value v) /* hhh */
+	{
+	return (v.vtype == T_DECIMAL) ? v.fval : 0.0;
+	}
+
+struct mstring *
+Value_AsWord(struct value v) /* hhh */
+	{
+	return (v.vtype == T_WORD) ? v.mval : NULL;
+	}
+
+struct func *
+Value_AsFunc(struct value v) /* hhh */
+	{
+	return (v.vtype == T_FUNC) ? v.fnval : NULL;
+	}
+
+struct list *
+Value_AsList(struct value v) /* hhh */
+	{
+	return (v.vtype == T_LIST) ? v.lval : NULL;
+	}
+
+const char *
+Value_AsCStr(struct value v) /* hhh */
+	{
+	struct mstring *m = Value_AsWord(v);
+	return ((m) ? (mstring_cstr(m)) : (""));
+	}
+
 int Value_IsEmpty(struct value v) /* hhh */
 	{
 	return (T_EMPTY == v.vtype);
@@ -91,6 +173,7 @@ int Value_IsList(const struct value v)
 	return (Value_Type(v) == T_LIST);
 	}
 
+
 int
 Value_IsTrue(struct value v)
 	{
@@ -109,125 +192,13 @@ Value_IsTrue(struct value v)
 		}
 	}
 
-long
-Value_AsNumber(struct value v) /* hhh */
-	{
-	return (v.vtype == T_NUMBER) ? v.ival : 0;
-	}
-
-double
-Value_AsDecimal(struct value v) /* hhh */
-	{
-	return (v.vtype == T_DECIMAL) ? v.fval : 0.0;
-	}
-
-struct mstring *
-Value_AsWord(struct value v) /* hhh */
-	{
-	return (v.vtype == T_WORD) ? v.mval : NULL;
-	}
-
-struct func *
-Value_AsFunc(struct value v) /* hhh */
-	{
-	return (v.vtype == T_FUNC) ? v.fnval : NULL;
-	}
-
-struct list *
-Value_AsList(struct value v) /* hhh */
-	{
-	return (v.vtype == T_LIST) ? v.lval : NULL;
-	}
-
-const char *
-Value_AsCStr(struct value v) /* hhh */
-	{
-	struct mstring *m = Value_AsWord(v);
-	return ((m) ? (mstring_cstr(m)) : (""));
-	}
-
-int  value_is_number(const struct value *v) /* hhh */
-	{
-	return v && v->vtype == T_NUMBER;
-	}
-int value_is_decimal(const struct value *v) /* hhh */
-	{
-	return v && v->vtype == T_DECIMAL;
-	}
-int value_is_empty(const struct value *v) /* hhh */
-	{
-	return !v || v->vtype == T_EMPTY;
-	}
-/* int value_is_constant(const struct value *v) { return v && v->is_const; } */
+/* int Value_IsConstant(const struct value *v) { return v && v->is_const; } */
 
 /* void value_set_constant(struct value *v)
 	{ if (v) v->is_const = 1; }
 */
 
-int value_get_num(const struct value *v) /* hhh */
-	{
-	return v ? v->ival : 0;
-	}
-double value_get_decimal(const struct value *v) /* hhh */
-	{
-	return v ? v->fval : 0.0f;
-	}
-struct mstring *value_get_word(const struct value *v) /* hhh */
-	{
-	return v ? v->mval : NULL;
-	}
-struct list *value_get_list(const struct value *v) /* hhh */
-	{
-	return v ? v->lval : NULL;
-	}
-
-
-
-void Value_Print(const struct value *v) /* hhh */
-	{
-	if(v)
-		{
-		switch(v->vtype)
-			{
-			case T_NUMBER :
-				printf("%ld", v->ival);
-				break;
-			case T_DECIMAL:
-				printf("%g", (double)v->fval);
-				break;
-			case T_BOOL:
-				printf("%s", (v->ival ? "true" : "false"));
-				break;
-			case T_WORD:
-				printf("%s", mstring_cstr(v->mval));
-				break;
-			case T_LIST:
-				print_list(v->lval);
-				break;
-			default:
-				break;
-			}
-		}
-	}
-struct value Value_Copy(struct value v) /* hhh */
-	{
-	if (v.vtype == T_WORD && v.mval)
-		v.mval->refcount++;
-	else if (v.vtype == T_LIST && v.lval)
-		list_incref(v.lval);
-	return v;
-	}
-
-void Value_Free(struct value v) /* hhh */
-	{
-	/* DEBUG: double-free risk if caller also frees */
-	if ((v.vtype == T_WORD) && v.mval)
-		mstring_free(v.mval);
-	else if ((v.vtype == T_LIST) && v.lval)
-		list_decref(v.lval);
-	}
-
-const char *value_cstr(struct value *v) /* hhh */
+const char *Value_AsCstr(struct value *v) /* hhh */
 	{
 	if (v)
 		{
@@ -236,7 +207,7 @@ const char *value_cstr(struct value *v) /* hhh */
 	return(NULL);
 	}
 
-int value_equal(struct value a, struct value b) /* hhh */
+int Value_Equal(struct value a, struct value b) /* hhh */
 	{
 	if (a.vtype != b.vtype) return 0;
 	switch (a.vtype)

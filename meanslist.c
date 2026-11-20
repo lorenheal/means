@@ -1,4 +1,6 @@
+#include "means.h"
 #include "meanslist.h"
+#include "help.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,35 +59,50 @@ struct value list_last(const struct list *lst)
 	return Value_Copy(lst->tail->val);
 	}
 
-void list_append(struct value v, struct list *lst)
+struct list *list_append(struct value v, struct list *lst)
 	{
-	if (!lst) return; /* ERROR: null list — diagnose */
-	struct listnode *n = listnode_new(v);
-	n->next = NULL;
-	if (lst->tail)
-		lst->tail->next = n;
-	else
-		lst->head = n;
-	lst->tail = n;
-	lst->length++;
-	}
-
-void list_insert(struct value v, struct list *lst)
-	{
-	if(!lst) return; /* ERROR: null list — diagnose */
-	struct listnode *n = listnode_new(v);
-	n->next = lst->head;
-	lst->head = n;
-	if (!(lst->tail))
+	struct list *ret = lst;
+	if (lst)
+		{
+		struct listnode *n = listnode_new(v);
+		n->next = NULL;
+		if (lst->tail)
+			lst->tail->next = n;
+		else
+			{
+			lst->head = n;
+			}
 		lst->tail = n;
-	lst->length++;
+		lst->length++;
+		}
+	else
+		diagnose(DIAG_ERROR, DBG_LIST, 0,0, "null list in append");
+	return(ret);
 	}
 
-void list_push(struct value v, struct list *lst)
+struct list *list_insert(struct value v, struct list *lst)
 	{
-	list_insert(v, lst);
+	/* just returns the lst pointer */
+	if(lst) 
+		{
+		struct listnode *n = listnode_new(v);
+		n->next = lst->head;
+		lst->head = n;
+		if (!(lst->tail))
+			lst->tail = n;
+		lst->length++;
+		}
+	else 
+		diagnose(DIAG_ERROR, DBG_LIST, 0,0, "null list in insert");
+	return(lst);
 	}
 
+struct list *list_push(struct value v, struct list *lst)
+	{
+	return(list_insert(v, lst));
+	}
+
+/* returns a new copy of the rest of the list */
 struct list *list_rest(const struct list *lst)
 	{
 	struct list *r = list_new();
@@ -140,7 +157,7 @@ list_find(struct value v, const struct list *lst)
 	if (lst)
 		{
 		for (const struct listnode *n = list_head(lst); n; n = listnode_next(n), i++)
-			if (value_equal(listnode_val(n), v))
+			if (Value_Equal(listnode_val(n), v))
 				{
 				ret = i;
 				break;
@@ -169,13 +186,27 @@ int list_get_refcount(const struct list *lst)
 	{
 	return lst ? lst->refcount : 0;
 	}
-void list_incref(struct list *lst)
+
+int list_incref(struct list *lst)
 	{
-	if (lst) lst->refcount++;
+	int ret = 0;
+	if (lst) 
+		{
+		lst->refcount++;
+		ret = lst->refcount;  /* value after increment */
+		}
+	return(ret);
 	}
-void list_decref(struct list *lst)
+
+int list_decref(struct list *lst)
 	{
-	if (lst && --lst->refcount == 0) list_free(lst);
+	int ret = 0;
+	if (lst)
+		{
+		if(--lst->refcount <= 0)
+			list_free(lst);
+		}
+	return(ret);
 	}
 
 struct value listnode_val(const struct listnode *n)

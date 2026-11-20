@@ -14,11 +14,13 @@ enum severity
 
 /* the only list you edit */
 #define DBG_AREAS(M) \
+    M(OK,      'k', "OK") \
     M(AST,      'a', "AST") \
     M(BUILTIN, 'b', "builtins") \
     M(EMIT,     'e', "emit") \
     M(EXEC,     'x', "exec") \
     M(GRAMMAR,  'g', "grammar") \
+    M(LIST,     'l', "list") \
     M(GETOPT,   'o', "getopt") \
     M(MSTRING,  'm', "mstring") \
     M(PARAMS,   'p', "params") \
@@ -45,12 +47,14 @@ enum {
 };
 
 /* the constants call sites use */
+#define DBG_OK       (0)
 #define DBG_AST      (1u << DBG_AST_BIT)
 #define DBG_BUILTIN  (1u << DBG_BUILTIN_BIT)
 #define DBG_EMIT     (1u << DBG_EMIT_BIT)
 #define DBG_EXEC     (1u << DBG_EXEC_BIT)
 #define DBG_GRAMMAR  (1u << DBG_GRAMMAR_BIT)
 #define DBG_GETOPT   (1u << DBG_GETOPT_BIT)
+#define DBG_LIST     (1u << DBG_LIST_BIT)
 #define DBG_MSTRING  (1u << DBG_MSTRING_BIT)
 #define DBG_PARAMS   (1u << DBG_PARAMS_BIT)
 #define DBG_PRINT    (1u << DBG_PRINT_BIT)
