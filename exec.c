@@ -156,54 +156,50 @@ eval_expr(struct expr *e, struct scope *scope)
 			return Value_Copy(s->val);
 			}
 		case EV_BINOP:
-			{
 			struct value l = eval_expr(e->left, scope);
 			struct value r = eval_expr(e->right, scope);
 			struct value result = Value_Empty();
 			enum vtype rt = result_type(l, r);
-
 			if (rt != T_UNTYPED)
 				{
 				double ld = as_double(l);
 				double rd = as_double(r);
-				double res;
+				int is_comparison = 0;
+				double res = 0.0;
 				switch (e->op)
 					{
-					case GREATER_THAN: res = ld > rd;  break;
-					case LESS_THAN:    res = ld < rd;  break;
-					case EQUAL_TO:     res = ld == rd; break;
-					case UNEQUAL_TO:   res = ld != rd; break;
-					case AT_LEAST:     res = ld >= rd; break;
-					case AT_MOST:      res = ld <= rd; break;
 					case PLUS: res = ld + rd; break;
 					case MINUS: res = ld - rd; break;
 					case TIMES: res = ld * rd; break;
 					case OVER:
+						if (rd == 0.0)
+							diagnose(DIAG_WARNING, DBG_USER, e->line, 0, "division by zero");
 						res = (rd != 0.0) ? ld / rd : 0.0;
-						if(rd == 0.0)
-							diagnose(DIAG_WARNING,DBG_USER,e->line,0,"division by zero");
 						break;
+					case GREATER_THAN: res = ld >  rd; is_comparison = 1; break;
+					case LESS_THAN: res = ld <  rd; is_comparison = 1; break;
+					case EQUAL_TO: res = ld == rd; is_comparison = 1; break;
+					case UNEQUAL_TO: res = ld != rd; is_comparison = 1; break;
+					case AT_LEAST: res = ld >= rd; is_comparison = 1; break;
+					case AT_MOST: res = ld <= rd; is_comparison = 1; break;
 					default:
-						res = 0.0;
+						diagnose(DIAG_ERROR, DBG_EXEC, e->line, 0, "unknown operator");
 						break;
 					}
-					if (e->op == GREATER_THAN || e->op == LESS_THAN ||
-						e->op == EQUAL_TO    || e->op == UNEQUAL_TO ||
-						e->op == AT_LEAST    || e->op == AT_MOST)
-						result = Value_Bool(res != 0.0);
-					else
-						result = (rt == T_DECIMAL) ? Value_Decimal(res) : Value_Number((int)res);
+				if (is_comparison)
+					result = Value_Bool(res != 0.0);
+				else
+					result = (rt == T_DECIMAL) ? Value_Decimal(res)
+					         : Value_Number((long)res);
 				}
-			else 
+			else
 				{
-				  /* ERROR: non-numeric operands for arithmetic */
-        diagnose(DIAG_ERROR, DBG_EXEC, e->line, 0,
-                 "non-numeric operands for operator");
+				diagnose(DIAG_ERROR, DBG_EXEC, e->line, 0,
+				         "non-numeric operands for operator");
 				}
 			Value_Free(l);
 			Value_Free(r);
 			return result;
-			}
 		case EV_CALL:
 			return call_func(e->name, e->args, scope);
 		case EV_LIST:
