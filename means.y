@@ -37,6 +37,7 @@ struct stmt *cur_head;
 
 %token THE THEN IS IF WHILE ELSE TO MEANS DO DONE RETURN
 %token AND PLUS MINUS TIMES OVER
+%token LOGICAL_AND LOGICAL_OR EXCLUSIVE_OR
 %token GREATER_THAN LESS_THAN EQUAL_TO UNEQUAL_TO AT_LEAST AT_MOST
 %token QUANTITY END CONSTANT STAYS DOT
 
@@ -167,6 +168,9 @@ expr
     | expr UNEQUAL_TO expr                { $$ = ev_binop(UNEQUAL_TO, $1, $3); }
     | expr AT_LEAST expr                  { $$ = ev_binop(AT_LEAST, $1, $3); }
     | expr AT_MOST expr                   { $$ = ev_binop(AT_MOST, $1, $3); }
+    | expr LOGICAL_AND expr               { $$ = ev_binop(LOGICAL_AND, $1, $3); }
+    | expr LOGICAL_OR expr                { $$ = ev_binop(LOGICAL_OR, $1, $3); }
+    | expr EXCLUSIVE_OR expr              { $$ = ev_binop(EXCLUSIVE_OR, $1, $3); }
     | QUANTITY expr END QUANTITY          { $$ = $2; }
     ;
 
