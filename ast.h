@@ -1,6 +1,7 @@
 #ifndef AST_H
 #define AST_H
 
+#include "means.h"
 #include "value.h"
 #include "params.h"
 #include "symtab.h"

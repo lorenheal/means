@@ -2,6 +2,8 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
+
+#include "means.h"
 #include "ast.h"
 #include "value.h"
 #include "symtab.h"

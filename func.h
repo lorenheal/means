@@ -2,6 +2,7 @@
 #ifndef FUNC_H
 #define FUNC_H
 
+#include "means.h"
 #include "value.h"
 #include "ast.h"
 #include "symtab.h"

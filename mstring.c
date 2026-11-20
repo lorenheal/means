@@ -22,7 +22,7 @@ void            mstring_decref(struct mstring *s);
 const char     *mstring_cstr(const struct mstring *s);
 int             mstring_len(const struct mstring *s);
 struct mstring *mstring_split(struct mstring *s, int n);   / * split * /
-void            mstring_append(struct mstring *s, const char *extra);
+void            mstring_append(const char *extra, struct mstring *s );
 */
 
 
@@ -128,7 +128,7 @@ struct mstring  *mstring_split(struct mstring *m, int n)
 	return ret;
 	}
 
-void mstring_append(struct mstring *m, const char *extra)
+void mstring_append( const char *extra, struct mstring *m)
 	{
 	if (!m || !extra) return; /* ERROR: null */
 	int extralen = strlen(extra);
@@ -147,7 +147,7 @@ void mstring_append(struct mstring *m, const char *extra)
 	m->len += extralen;
 	}
 
-void mstring_insert(struct mstring *m, const char *extra)
+void mstring_insert(const char *extra, struct mstring *m )
 	{
 	if (!m || !extra) return;     /* ERROR: null */
 	int extralen = strlen(extra);

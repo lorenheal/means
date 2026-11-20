@@ -1,5 +1,7 @@
 #ifndef VALUE_H
 #define VALUE_H
+
+#include "means.h"
 #include <stddef.h>
 
 enum vtype 

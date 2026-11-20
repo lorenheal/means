@@ -1,6 +1,8 @@
 #ifndef SYMLIST_H
 #define SYMLIST_H
 
+
+#include "means.h"
 #include "symtab.h"   /* struct sym */
 
 struct sym *symlist_new(const char *name);

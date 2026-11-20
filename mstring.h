@@ -1,5 +1,7 @@
 #ifndef MSTRING_INC
 #define MSTRING_INC
+
+#include "means.h"
 #include <stddef.h>
 
 /*
@@ -24,8 +26,8 @@ const char     *mstring_cstr(const struct mstring *s);
 int             mstring_len(const struct mstring *s);
 struct mstring  *mstring_split(struct mstring *m, int n);
 struct mstring *mstring_rest(struct mstring *m, int n);
-void            mstring_append(struct mstring *s, const char *extra);
-void mstring_insert(struct mstring *m, const char *extra);
+void            mstring_append(const char *extra, struct mstring *s );
+void mstring_insert(const char *extra, struct mstring *m );
 int mstring_find(const struct mstring *needle, const struct mstring *hay );
 int mstring_refcount(const struct mstring *m);
 char *mstring_data(struct mstring *m);   /* non-const for the rare mutator */

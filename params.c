@@ -129,43 +129,54 @@ arglist_free(struct argnode *list)
 
 match_result
 params_match(const struct func *f, struct value *argv, int argc)
-	{
-	const struct param *p;
-	int i, fixed;
+    {
+    match_result result = MATCH_OK;
+    const struct param *p;
+    int i, fixed;
 
-	if (!f)
-		return MATCH_NULL_FUNC;
+    if (!f)
+        result = MATCH_NULL_FUNC;
+    else
+        {
+        fixed = func_param_count(f);
 
-	fixed = func_param_count(f);
-	if (argc < fixed)
-		return MATCH_TOO_FEW;
-	if (argc > fixed && !func_is_rest(f))
-		return MATCH_TOO_MANY;
+        if (!(f->is_rest && fixed == 0))   /* pure-rest zero-arg is always OK */
+            {
+            if (argc < fixed)
+                result = MATCH_TOO_FEW;
+            else if (argc > fixed && !func_is_rest(f))
+                result = MATCH_TOO_MANY;
+            else
+                {
+                for (p = f->params, i = 0;
+                     p && i < fixed && result == MATCH_OK;
+                     p = p->next, i++)
+                    {
+                    enum vtype want = p->vtype;
+                    struct value got;
 
-	for (p = f->params, i = 0; p && i < fixed; p = p->next, i++)
-		{
-		enum vtype want = p->vtype;
-		struct value got;
+                    if (want == T_UNTYPED || want == T_ANY)
+                        continue;
 
-		if (want == T_UNTYPED || want == T_ANY)
-			continue;
+                    got = argv[i];
+                    if (want != T_LIST
+                            && Value_IsList(got)
+                            && list_length(Value_AsList(got)) == 1)
+                        got = list_first(Value_AsList(got));
 
-		got = argv[i];
-		if (want != T_LIST
-		        && Value_IsList(got)
-		        && list_length(Value_AsList(got)) == 1)
-			got = list_first(Value_AsList(got));
-
-		if (want != Value_Type(got))
-			{
-			diagnose(DIAG_DEBUG, DBG_PARAMS, 0, 0,
-			         "type mismatch want %d got %d",
-			         want, Value_Type(got));
-			return MATCH_TYPE_MISMATCH;
-			}
-		}
-	return MATCH_OK;
-	}
+                    if (want != Value_Type(got))
+                        {
+                        diagnose(DIAG_DEBUG, DBG_PARAMS, 0, 0,
+                                 "type mismatch want %d got %d",
+                                 want, Value_Type(got));
+                        result = MATCH_TYPE_MISMATCH;
+                        }
+                    }
+                }
+            }
+        }
+    return result;
+    }
 
 void
 report_match_failure(const char *name, match_result mr,

@@ -6,10 +6,12 @@
 #include "params.h"
 #include "value.h"
 #include "help.h"
+#include "means.tab.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
+extern FILE *yyin;
 
 struct builtin_desc
 	{
@@ -28,19 +30,18 @@ static struct value builtin_length(struct scope *);
 static struct value builtin_find(struct scope *);
 static struct value builtin_empty(struct scope *);
 static struct value builtin_exit(struct scope *);
-/*
 static struct value builtin_read(struct scope *);
-static struct value builtin_roll(struct scope *);
 static struct value builtin_first(struct scope *);
 static struct value builtin_rest(struct scope *);
 static struct value builtin_last(struct scope *);
 static struct value builtin_append(struct scope *);
 static struct value builtin_insert(struct scope *);
-static struct value builtin_split(struct scope *);
 static struct value builtin_push(struct scope *);
 static struct value builtin_pop(struct scope *);
-static struct value builtin_join(struct scope *);
-*/
+static struct value builtin_split(struct scope *);
+/* static struct value builtin_roll(struct scope *);*/
+/* static struct value builtin_join(struct scope *); */
+
 /* type vectors for the overloads that need them */
 
 static const enum vtype ty_1_any[]         = { T_ANY };
@@ -64,6 +65,20 @@ static const struct builtin_desc builtins[] =
 	{ "exit",    builtin_exit,    0, 1, NULL },               /* exit. */
 	{ "exit",    builtin_exit,    1, 0, ty_1_number },        /* exit 1. */
 	{ "exit",    builtin_exit,    2, 0, ty_2_number_word },   /* exit 1 and "msg". */
+	{ "read", builtin_read, 0, 1, NULL },
+    { "first",  builtin_first,  1, 0, ty_1_any },
+    { "rest",   builtin_rest,   1, 0, ty_1_any },
+    { "split",  builtin_split,  1, 0, ty_1_any  },
+    { "last",   builtin_last,   1, 0, ty_1_any  },
+    { "append", builtin_append, 2, 0, ty_2_any_list },
+    { "append", builtin_append, 2, 0, ty_2_word_word },
+    { "insert", builtin_insert, 2, 0, ty_2_any_list },
+    { "insert", builtin_insert, 2, 0, ty_2_word_word },
+    { "push",   builtin_push,   2, 0, ty_2_any_list },
+    { "pop",    builtin_pop,    1, 0, ty_1_list },
+/*   { "join",   builtin_join,   2, 0, ty_2_any_list }, */
+/*   { "join",   builtin_join,   2, 0, ty_2_word_word}, */
+/*   { "roll",   builtin_roll,   0, 1, NULL },          */
     { NULL, NULL, 0, 0, NULL }
     };
 
@@ -146,25 +161,53 @@ builtin_exit(struct scope *scope)
     int code = 0;
     struct value codev = sym_value(sym_find_in_scope("_exit_1", scope));
     struct value msgv  = sym_value(sym_find_in_scope("_exit_2", scope));
+	const char *msg = "";
 
     if (!Value_IsEmpty(codev) && Value_IsNumber(codev))
         code = Value_AsNumber(codev);
 
     if (!Value_IsEmpty(msgv) && Value_IsWord(msgv))
-        diagnose(DIAG_WARNING, DBG_BUILTIN,0,0, "%s\n", mstring_cstr(Value_AsWord(msgv)));
+		{
+		msg = mstring_cstr(Value_AsWord(msgv));
+        diagnose(DIAG_WARNING, DBG_BUILTIN,0,0, "%s\n", msg);
+		}
 
     /*  If changing diagnose(), make a silent EXIT_SUCCESS / EXIT_FAILURE path 
-    *	diagnose(DIAG_FATAL, DBG_EXEC, 0, 0, "exit %d %s", code, msgv); 
+    *	diagnose(DIAG_FATAL, DBG_EXEC, 0, 0, "exit %d %s", code, msg); 
     *	diagnose(DIAG_FATAL, code, 0, 0, "" ); 
 	*/
 
-    exit(code);
+    /* printf("exit(%d) %s\n",code, msg); */
 
     Value_Free(codev);
     Value_Free(msgv);
+	exit(code);
     return Value_Empty();   /* unreachable */
     }
 
+static struct value
+builtin_read(struct scope *scope)
+    {
+    (void)scope;
+    char *line = NULL;
+    size_t cap = 0;
+    ssize_t n;
+	FILE *input = stdin;
+
+    /* was: n = getline(&line, &cap, yyin ? yyin : stdin); */
+    n = getline(&line, &cap, input);
+    if (n < 0)                      /* EOF or error */
+        {
+        free(line);
+        return Value_Empty();
+        }
+    if (n > 0 && line[n-1] == '\n')
+        line[n-1] = '\0';           /* drop the newline */
+
+    struct value ret = Value_Word(line);
+    free(line);
+    return ret;
+    }
 /*
 static int
 optional_count(struct scope *scope)
@@ -259,6 +302,203 @@ builtin_find(struct scope *scope)
     Value_Free(haystack);
     return ret;
     }
+static struct value builtin_first(struct scope *scope)
+    {
+    struct value arg = sym_get_value("_first_1", scope);   /* or however the first arg is bound */
+    struct value ret = Value_Empty();
+    switch (Value_Type(arg))
+        {
+        case T_LIST:
+            if (Value_IsList(arg))
+                ret = list_first(Value_AsList(arg));
+            break;
+        case T_WORD:
+            {
+            struct mstring *m = Value_AsWord(arg);
+            if (m && mstring_len(m) > 0)
+                {
+                char buf[2] = { *mstring_cstr(m), 0 };
+                ret = Value_Word(buf);
+                }
+            }
+            break;
+        default:
+            break;
+        }
+    return ret;
+    }
+
+static struct value builtin_rest(struct scope *scope)
+    {
+    struct value arg = sym_get_value("_rest_1", scope);
+    struct value ret = Value_Empty();
+    switch (Value_Type(arg))
+        {
+        case T_LIST:
+            if (Value_IsList(arg))
+                ret = Value_List(list_rest(Value_AsList(arg)));
+            break;
+        case T_WORD:
+            {
+            struct mstring *m = Value_AsWord(arg);
+            if (m && mstring_len(m) > 1)
+                ret = Value_Word((mstring_cstr(m) + 1));
+            else
+                ret = Value_Word("");
+            }
+            break;
+        default:
+            break;
+        }
+    return ret;
+    }
+
+static struct value builtin_split(struct scope *scope)
+    {
+    struct value arg = sym_get_value("_split_1", scope);
+    struct value ret = Value_Empty();
+    switch (Value_Type(arg))
+        {
+        case T_LIST:
+            if (Value_IsList(arg))
+                ret = Value_List(list_split(Value_AsList(arg)));
+            break;
+        case T_WORD:
+            {
+            struct mstring *m = Value_AsWord(arg);
+            if (m)
+                ret = Value_Word(mstring_cstr(mstring_split(m, 1)));
+            }
+            break;
+        default:
+            break;
+        }
+    return ret;
+    }
+
+static struct value builtin_last(struct scope *scope)
+    {
+    struct value arg = sym_get_value("_last_1", scope);
+    struct value ret = Value_Empty();
+    switch (Value_Type(arg))
+        {
+        case T_LIST:
+            if (Value_IsList(arg))
+                ret = Value_Copy(list_last(Value_AsList(arg)));
+            break;
+        case T_WORD:
+            {
+            struct mstring *m = Value_AsWord(arg);
+            int len = mstring_len(m);
+            if (m && len > 0)
+                {
+                char buf[2] = { mstring_cstr(m)[len - 1], 0 };
+                ret = Value_Word(buf);
+                }
+            }
+            break;
+        default:
+			diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0, "last: unsupported type\n");
+            break;
+        }
+    return ret;
+    }
+
+static struct value builtin_append(struct scope *scope)
+    {
+    struct value small = sym_get_value("_append_1", scope);
+    struct value cont  = sym_get_value("_append_2", scope);
+    struct value ret   = Value_Empty();
+    /**/
+    if (Value_Type(cont) == T_LIST)
+        {
+        list_append(small, Value_AsList(cont));
+        ret = Value_Copy(cont);
+        }
+    else if (Value_Type(cont) == T_WORD && Value_Type(small) == T_WORD)
+        {
+        mstring_append(mstring_cstr(Value_AsWord(small)), Value_AsWord(cont));
+        ret = Value_Copy(cont);
+        }
+    return ret;
+    }
+
+static struct value builtin_insert(struct scope *scope)
+    {
+    struct value small = sym_get_value("_insert_1", scope);
+    struct value cont  = sym_get_value("_insert_2", scope);
+    struct value ret   = Value_Empty();
+    /**/
+    if (Value_Type(cont) == T_LIST)
+        {
+        list_insert(small, Value_AsList(cont));
+        ret = Value_Copy(cont);
+        }
+    else if (Value_Type(cont) == T_WORD && Value_Type(small) == T_WORD)
+        {
+        const char *n = mstring_cstr(Value_AsWord(small));
+        mstring_append(n, Value_AsWord(cont));
+        ret = cont;
+        }
+    return ret;
+    }
+
+static struct value builtin_push(struct scope *scope)
+    {
+    return builtin_insert(scope);
+    }
+
+static struct value builtin_pop(struct scope *scope)
+    {
+    struct value arg = sym_get_value("_pop_1", scope);
+    struct value ret = Value_Empty();
+    /**/
+    if (Value_Type(arg) == T_LIST && Value_IsList(arg))
+        {
+        ret = list_first(Value_AsList(arg));
+        list_split(Value_AsList(arg));
+        }
+    return ret;
+    }
+
+/* static struct value builtin_join(struct scope *scope)
+    {
+    struct value sep  = sym_get_value("_join_1", scope);
+    struct value cont = sym_get_value("_join_2", scope);
+    struct value ret  = Value_Empty();
+    
+    if (Value_Type(cont) == T_LIST)
+        {
+        ret = Value_Word(list_join( Value_Type(sep) == T_WORD
+                                         ? mstring_cstr(Value_AsWord(sep))
+                                         : ""), Value_List(cont));
+        }
+    else if (Value_Type(sep) == T_WORD && Value_Type(cont) == T_WORD)
+        {
+        struct mstring *n = mstring_copy(Value_AsWord(sep));
+        mstring_append(n, mstring_cstr(Value_AsWord(cont)));
+        ret = Value_Word(mstring_cstr(n));
+        }
+    return ret;
+    }
+*/
+/*
+static struct value builtin_roll(struct scope *scope)
+    {
+    struct list *lst = list_new();
+    / * pure rest: walk the scope for every argument bound under numeric names * /
+    for (int i = 1; ; i++)
+        {
+        char name[16];
+        snprintf(name, sizeof name, "_roll_%d", i);
+        struct sym *s = sym_find_in_scope(name, scope);
+        if (!s)
+            break;
+        list_append(lst, s->val);
+        }
+    return Value_List(lst);
+    }
+*/
 
 /*
 static struct value

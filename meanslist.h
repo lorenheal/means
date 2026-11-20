@@ -1,6 +1,8 @@
 #ifndef MEANSLIST_H
 #define MEANSLIST_H
 
+
+#include "means.h"
 #include "value.h"   /* for struct value */
 
 struct listnode {
