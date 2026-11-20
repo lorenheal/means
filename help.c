@@ -195,28 +195,54 @@ void debug_usage(void)
 
 */
 
-/* enum severity { DIAG_FATAL, DIAG_DEBUG, DIAG_NOTE, DIAG_WARNING, DIAG_ERROR };*/
-
-void diagnose(enum severity sev, unsigned area, int line, int col, const char *fmt, ...)
+/* enum severity { DIAG_FATAL, DIAG_DEBUG, DIAG_WARNING, DIAG_ERROR };*/
+void diagnose(enum severity sev, unsigned area, int line, int col,
+              const char *fmt, ...)
 	{
-	/* TODO: consider a DIAG_SUCCESS / silent-zero path so every
-   * termination (including clean exit 0 from exit builtin) can go through here.
-   */
-	FILE *out = stdout;
-	if (sev == DIAG_DEBUG && !DEBUG(area))
-		return;                              /* masked debug: silent */
-	(void)col; /* unused for now */
-	va_list ap;
-	va_start(ap, fmt);
-	fputc('#', out);
-	if (line > 0)
-		fprintf(out, "line %d: ", line);
-	vfprintf(out, fmt, ap);
-	fputc('\n', out);
-	va_end(ap);
-
-	if (sev == DIAG_ERROR)
-		error_count++;                       /* main checks this */
-	if (sev == DIAG_FATAL)
-		exit(area);
+	(void)col;                       /* unused for now */
+	FILE *out = stderr;              /* errors and warnings belong on stderr */
+	/**/
+	int should_print = 0;
+	int should_count = 0;
+	int should_exit  = 0;
+	int exit_code    = 0;
+	/**/
+	switch (sev)
+		{
+		case DIAG_DEBUG:
+			should_print = DEBUG(area);
+			break;
+		case DIAG_WARNING:
+			should_print = 1;
+			break;
+		case DIAG_ERROR:
+			should_print = 1;
+			should_count = 1;
+			break;
+		case DIAG_FATAL:
+			should_print = 1;
+			should_count = 1;
+			should_exit  = 1;
+			exit_code    = (area != DBG_OK) ? (int)area : 1;
+			break;
+		default:
+			break;
+		}
+	/**/
+	if (should_print && fmt)
+		{
+		va_list ap;
+		va_start(ap, fmt);
+		if (line > 0)
+			fprintf(out, "line %d: ", line);
+		vfprintf(out, fmt, ap);
+		fputc('\n', out);
+		va_end(ap);
+		}
+	/**/
+	if (should_count)
+		error_count++;
+	/**/
+	if (should_exit)
+		exit(exit_code);
 	}

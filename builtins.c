@@ -46,11 +46,11 @@ static struct value builtin_split(struct scope *);
 
 static const enum vtype ty_1_any[]         = { T_ANY };
 static const enum vtype ty_1_list[]        = { T_LIST };
-static const enum vtype ty_1_word[]        = { T_WORD };
+/* static const enum vtype ty_1_word[]        = { T_WORD };*/
 static const enum vtype ty_1_number[]      = { T_NUMBER };
 static const enum vtype ty_2_any_list[]    = { T_ANY, T_LIST };
 static const enum vtype ty_2_word_word[]   = { T_WORD, T_WORD };
-static const enum vtype ty_2_word_list[]   = { T_WORD, T_LIST };
+/* static const enum vtype ty_2_word_list[]   = { T_WORD, T_LIST }; */
 static const enum vtype ty_2_number_word[] = { T_NUMBER, T_WORD };
 
 static const struct builtin_desc builtins[] =
@@ -155,35 +155,31 @@ if (!namecheck("append", 0, "list", T_LIST) ||
              "append: parameter table does not match implementation");
 */
 
+
 static struct value
 builtin_exit(struct scope *scope)
-    {
+{
     int code = 0;
     struct value codev = sym_value(sym_find_in_scope("_exit_1", scope));
     struct value msgv  = sym_value(sym_find_in_scope("_exit_2", scope));
-	const char *msg = "";
 
     if (!Value_IsEmpty(codev) && Value_IsNumber(codev))
-        code = Value_AsNumber(codev);
+        code = (int)Value_AsNumber(codev);
 
-    if (!Value_IsEmpty(msgv) && Value_IsWord(msgv))
-		{
-		msg = mstring_cstr(Value_AsWord(msgv));
-        diagnose(DIAG_WARNING, DBG_BUILTIN,0,0, "%s\n", msg);
-		}
-
-    /*  If changing diagnose(), make a silent EXIT_SUCCESS / EXIT_FAILURE path 
-    *	diagnose(DIAG_FATAL, DBG_EXEC, 0, 0, "exit %d %s", code, msg); 
-    *	diagnose(DIAG_FATAL, code, 0, 0, "" ); 
-	*/
-
-    /* printf("exit(%d) %s\n",code, msg); */
+    if (!Value_IsEmpty(msgv) && Value_IsWord(msgv)) {
+        const char *msg = mstring_cstr(Value_AsWord(msgv));
+        diagnose(DIAG_WARNING, DBG_BUILTIN, 0, 0, "%s", msg);
+    }
 
     Value_Free(codev);
     Value_Free(msgv);
-	exit(code);
+
+    /* DIAG_FATAL prints (if fmt is non-NULL) then exits with the given code.
+       Passing NULL for fmt makes it silent. */
+    diagnose(DIAG_FATAL, (unsigned)code, 0, 0, NULL);
+
     return Value_Empty();   /* unreachable */
-    }
+}
 
 static struct value
 builtin_read(struct scope *scope)
