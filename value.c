@@ -187,6 +187,8 @@ Value_IsTrue(struct value v)
 			return mstring_len(Value_AsWord(v)) > 0;
 		case T_LIST:
 			return list_length(Value_AsList(v)) > 0;
+		case T_BOOL:
+			return Value_AsNumber(v) != 0;
 		default:
 			return 0;
 		}

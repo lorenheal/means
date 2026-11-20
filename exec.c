@@ -169,15 +169,15 @@ eval_expr(struct expr *e, struct scope *scope)
 				double res;
 				switch (e->op)
 					{
-					case PLUS:
-						res = ld + rd;
-						break;
-					case MINUS:
-						res = ld - rd;
-						break;
-					case TIMES:
-						res = ld * rd;
-						break;
+					case GREATER_THAN: res = ld > rd;  break;
+					case LESS_THAN:    res = ld < rd;  break;
+					case EQUAL_TO:     res = ld == rd; break;
+					case UNEQUAL_TO:   res = ld != rd; break;
+					case AT_LEAST:     res = ld >= rd; break;
+					case AT_MOST:      res = ld <= rd; break;
+					case PLUS: res = ld + rd; break;
+					case MINUS: res = ld - rd; break;
+					case TIMES: res = ld * rd; break;
 					case OVER:
 						res = (rd != 0.0) ? ld / rd : 0.0;
 						if(rd == 0.0)
@@ -187,8 +187,12 @@ eval_expr(struct expr *e, struct scope *scope)
 						res = 0.0;
 						break;
 					}
-				result = (rt == T_DECIMAL) ? Value_Decimal(res)
-				         : Value_Number((int)res);
+					if (e->op == GREATER_THAN || e->op == LESS_THAN ||
+						e->op == EQUAL_TO    || e->op == UNEQUAL_TO ||
+						e->op == AT_LEAST    || e->op == AT_MOST)
+						result = Value_Bool(res != 0.0);
+					else
+						result = (rt == T_DECIMAL) ? Value_Decimal(res) : Value_Number((int)res);
 				}
 			else 
 				{
