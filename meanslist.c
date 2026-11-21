@@ -238,19 +238,28 @@ listnode_value(const struct listnode *n)
 		return(NULL);
 	}
 
+int list_equal(const struct list *a, const struct list *b) {
+    if (a == b) return 1;
+    if (!a || !b || list_length(a) != list_length(b)) return 0;
+    struct listnode *na = list_head(a);
+    struct listnode *nb = list_head(b);
+    while (na && nb) {
+        if (!Value_Equal(na->val, nb->val)) return 0;  /* recurses for sublists */
+        na = list_next(na);
+        nb = list_next(nb);
+    }
+    return 1;
+}
+
 int print_list(const struct list *lst)
 	{
-	int nprinted = 0;
 	struct listnode *n;
+	int printed;
 	for (n = lst ? list_head(lst) : NULL; n; n = list_next(n))
 		{
-		int printed = Value_Print(&n->val);
-		if (printed)
-			{
-			if (nprinted)
-				printf(" ");
-			nprinted += printed;
-			}
+		printed = Value_Print(&n->val);
+		if ((0 < printed) && list_next(n))
+			printf(" ");
 		}
-	return(nprinted);
+	return(printed);
 	}

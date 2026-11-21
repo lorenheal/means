@@ -30,22 +30,19 @@ int mstring_refcount(const struct mstring *m)
 	{
 	return m ? m->refcount : 0;
 	}
+
 char *mstring_data(struct mstring *m)
 	{
 	return m ? m->data : NULL;
 	}
 
-static char empty_buf[1] = { '\0' };
-static struct mstring mstring_empty =
-	{ .data = empty_buf, .len = 0, .size = 1, .refcount = 1 };
-
 struct mstring *mstring_new(const char *s)
 	{
-	if(!s || !*s)
+	if(!s)
 		{
-		return(mstring_incref(&mstring_empty));
+		s="";
 		}
-	/* s and is OK for strdup() */
+	/* s is OK for strdup() */
 	struct mstring *m = calloc(1, sizeof *m);
 	if(m)
 		{
@@ -56,8 +53,8 @@ struct mstring *mstring_new(const char *s)
 		}
 	else
 		{
-		diagnose(DIAG_ERROR,DBG_MSTRING,0,0,"mem error in mstring_new");
-		exit(1);
+		diagnose(DIAG_FATAL,DBG_MSTRING,0,0,"mem error in mstring_new");
+		exit(1); /* unreachable */
 		}
 	return m;
 	}
@@ -66,11 +63,12 @@ void mstring_free(struct mstring *m)
 	{
 	if(m && (--m->refcount < 1))
 		{
-		if((m != &mstring_empty) && (m->data))
+		if(m->data)
 			free(m->data);
 		free(m);
 		}
 	}
+
 void mstring_decref(struct mstring *s)
 	{
 	mstring_free(s);

@@ -41,6 +41,8 @@ struct list *list_push(struct value v, struct list *lst);     /* copy v, O(1); j
 struct list *list_rest(const struct list *lst);  /* new header, copied tail, owned copy of length-1 */
 struct list *list_copy(const struct list *lst);  /* deep copy of values */
 int          list_isempty(const struct list *lst);
+int list_equal(const struct list *a, const struct list *b);
+
 int 		list_find(struct value v, const struct list *lst);
 int print_list(const struct list *lst);
 struct listnode *list_head(const struct list *lst);

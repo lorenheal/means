@@ -21,6 +21,9 @@ aLll: $(TARGET)
 test-value: test-value.o value.o meanslist.o mstring.o help.o
 	$(CC) -o $@ $^
 
+test-mstring: test-mstring.o value.o meanslist.o mstring.o help.o
+	$(CC) -o $@ $^
+
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
