@@ -1,12 +1,12 @@
-TO show the argues are empty MEANS TO
+TO show the argues are empty  MEANS TO
 DO
 	print "[" and the argues and "]" .
-    print the argues and newline.
+    print the argues.
 DONE.
 
 the args are 1 and 2 and "three".
 show.
-#argument type mismatch 
+#show: argument type mismatch 
 show empty.
 #[]
 show 1 and 2.

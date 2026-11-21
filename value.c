@@ -30,31 +30,37 @@ void Value_Free(struct value v) /* hhh */
 		list_decref(v.lval);
 	}
 
-void Value_Print(const struct value *v) /* hhh */
+int Value_Print(const struct value *v) /* hhh */
 	{
+	int printed = 0;
 	if(v)
 		{
 		switch(v->vtype)
 			{
 			case T_NUMBER :
 				printf("%ld", v->ival);
+				printed++;
 				break;
 			case T_DECIMAL:
 				printf("%g", (double)v->fval);
+				printed++;
 				break;
 			case T_BOOL:
 				printf("%s", (v->ival ? "true" : "false"));
+				printed++;
 				break;
 			case T_WORD:
 				printf("%s", mstring_cstr(v->mval));
+				printed += (mstring_len(v->mval) > 0?1:0);
 				break;
 			case T_LIST:
-				print_list(v->lval);
+				printed += print_list(v->lval);
 				break;
 			default:
 				break;
 			}
 		}
+	return(printed);
 	}
 
 long
@@ -99,7 +105,10 @@ int Value_IsEmpty(struct value v) /* hhh */
 	return (T_EMPTY == v.vtype);
 	}
 
-enum vtype   Value_Type(struct value v) {return v.vtype; } /* hhh */
+enum vtype   Value_Type(struct value v)
+	{
+	return v.vtype;    /* hhh */
+	}
 
 struct value Value_Bool(int b) /* hhh */
 	{
@@ -111,8 +120,8 @@ struct value Value_Func(struct func *f) /* hhh */
 	{
 	struct value v = Value_Empty();
 	if(f)
-		{ 
-		v.vtype = T_FUNC; 
+		{
+		v.vtype = T_FUNC;
 		v.fnval = f;
 		};
 	return v;
@@ -153,22 +162,22 @@ struct value Value_List(struct list *lst) /* hhh */
 	return v;
 	}
 
-int Value_IsNumber(const struct value v) 
+int Value_IsNumber(const struct value v)
 	{
 	return (Value_Type(v) == T_NUMBER);
 	}
 
-int Value_IsDecimal (const struct value v) 
+int Value_IsDecimal (const struct value v)
 	{
 	return (Value_Type(v) == T_DECIMAL);
 	}
 
-int Value_IsWord(const struct value v) 
+int Value_IsWord(const struct value v)
 	{
 	return (Value_Type(v) == T_WORD);
 	}
 
-int Value_IsList(const struct value v) 
+int Value_IsList(const struct value v)
 	{
 	return (Value_Type(v) == T_LIST);
 	}
@@ -188,7 +197,7 @@ Value_IsTrue(struct value v)
 		case T_LIST:
 			return list_length(Value_AsList(v)) > 0;
 		case T_BOOL:
-			return Value_AsNumber(v) != 0;
+			return v.ival != 0;
 		default:
 			return 0;
 		}

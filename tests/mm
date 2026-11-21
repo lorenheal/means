@@ -9,9 +9,9 @@ if [ -f ${tst} ]; then
 	grep "^#" $tst | sed 's/^#//' > ${tst%.m}.expected 
 	cat "$tst"; 
 	echo "=== EXPECTED ==="; 
-	cat "${tst%.m}.expected"; 
+	cat "${tst%.m}.expected" | hexdump -c; 
 	echo "=== ACTUAL ==="; 
-	../means $flags -f "$tst"
+	../means $flags -f "$tst" | hexdump -c
 	} 2>&1 | xcat
 fi
 rm -f ${tst%.m}.expected

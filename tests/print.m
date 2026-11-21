@@ -1,12 +1,19 @@
+print 1.
+#1
 print.
-print newline.
 #
-print empty and "a" and space and "b" and newline.
+print 2.
+#2
+print empty and "a" and "b".
 #a b
-print 1 and space and 2 and newline.
+print empty "a" and "b" and "c".
+#
+print "[" and "a" and empty and "b" and "c" and "]".
+#[ a b c ]
+print 1 and 2.
 #1 2
-print "hello world." and newline.
+print "hello world.".
 #hello world.
-print "Hello," and space and "World." and newline.
+print "Hello," and "World.".
 #Hello, World.
 

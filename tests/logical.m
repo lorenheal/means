@@ -1,6 +1,13 @@
 the c is true.
 the b is false.
-print the c logical and the b.
+the x is 3.
+if the x equal to 3 logical and true then print "yes".
+#yes
+if the x equal to 4 logical or true then print "also yes".
+#also yes
+print "xor" and true exclusive or false.
+#xor true
+print  the c logical and the b.
 #false
 print the c logical or the b.
 #true

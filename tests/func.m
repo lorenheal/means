@@ -2,14 +2,14 @@
  # zero-arg function
  #
 TO fortytwo MEANS TO DO
-	print 42 and newline.
+	print 42.
 DONE.
 fortytwo.
 #42
 
  # zero-arg, returns a number
 TO fortythree MEANS TO DO
-	return 43 and newline.
+	return 43.
 DONE.
 print fortythree.
 #43
@@ -20,7 +20,7 @@ print fortythree.
 TO say the message is "" MEANS to print the message and " ". 
  #
 TO bray the message is "" MEANS to do
-	print the message and newline.
+	print the message.
 done.
 say "hi".
 #hi
@@ -40,12 +40,12 @@ TO double THE n is 0 MEANS to return the n times 2.
 TO redouble THE n is 0.0 MEANS to do return the n times 2. done.
 
 the x is 7.
-print the x and newline.
+print the x.
 #7
 the y is double the x.
-print the y and newline.
+print the y.
 #14
-print double the y and newline.
+print double the y.
 #28
-print ".. " and redouble the y and newline.
+print ".. " and redouble the y.
 #.. 28

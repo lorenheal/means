@@ -1,4 +1,4 @@
-print the nonexistent and newline.
+print the nonexistent.
 ##undefined variable: nonexistent
 #
 #0

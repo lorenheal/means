@@ -42,7 +42,7 @@ struct list *list_rest(const struct list *lst);  /* new header, copied tail, own
 struct list *list_copy(const struct list *lst);  /* deep copy of values */
 int          list_isempty(const struct list *lst);
 int 		list_find(struct value v, const struct list *lst);
-void print_list(const struct list *lst);
+int print_list(const struct list *lst);
 struct listnode *list_head(const struct list *lst);
 struct listnode *list_next(const struct listnode *lst);
 struct listnode *list_tail(const struct list *lst);

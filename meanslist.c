@@ -83,7 +83,7 @@ struct list *list_append(struct value v, struct list *lst)
 struct list *list_insert(struct value v, struct list *lst)
 	{
 	/* just returns the lst pointer */
-	if(lst) 
+	if(lst)
 		{
 		struct listnode *n = listnode_new(v);
 		n->next = lst->head;
@@ -92,7 +92,7 @@ struct list *list_insert(struct value v, struct list *lst)
 			lst->tail = n;
 		lst->length++;
 		}
-	else 
+	else
 		diagnose(DIAG_ERROR, DBG_LIST, 0,0, "null list in insert");
 	return(lst);
 	}
@@ -136,7 +136,7 @@ struct list *list_split(struct list *lst)
 	if (!lst || !lst->head || !lst->head->next)
 		return rest;                 /* DEBUG: nothing to split */
 
-/* WARN: mutates original; callers must own lst */
+	/* WARN: mutates original; callers must own lst */
 
 	rest->head   = lst->head->next;
 	rest->tail   = lst->tail;
@@ -190,7 +190,7 @@ int list_get_refcount(const struct list *lst)
 int list_incref(struct list *lst)
 	{
 	int ret = 0;
-	if (lst) 
+	if (lst)
 		{
 		lst->refcount++;
 		ret = lst->refcount;  /* value after increment */
@@ -238,13 +238,19 @@ listnode_value(const struct listnode *n)
 		return(NULL);
 	}
 
-void print_list(const struct list *lst)
+int print_list(const struct list *lst)
 	{
+	int nprinted = 0;
 	struct listnode *n;
 	for (n = lst ? list_head(lst) : NULL; n; n = list_next(n))
 		{
-		Value_Print(&n->val);
-		if (n->next) 
-			printf(" ");
+		int printed = Value_Print(&n->val);
+		if (printed)
+			{
+			if (nprinted)
+				printf(" ");
+			nprinted += printed;
+			}
 		}
+	return(nprinted);
 	}

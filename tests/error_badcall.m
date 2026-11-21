@@ -1,3 +1,3 @@
 the x is 5.
-print nosuchfunc the x and newline.
+print nosuchfunc the x.
 ##undefined function: nosuchfunc
