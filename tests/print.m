@@ -4,8 +4,8 @@ print.
 #
 print 2.
 #2
-print empty and "a" and "b".
-#a b
+print empty and "a" and "b" and empty.
+#a b 
 print empty "a" and "b" and "c".
 #
 print "[" and "a" and empty and "b" and "c" and "]".

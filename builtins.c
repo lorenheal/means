@@ -136,21 +136,21 @@ builtin_print(struct scope *scope)
 	struct list *args = get_arguments(scope);
 	struct value spc = Value_Word(" ");
 	struct value nl  = Value_Word("\n");
-	int need_space = 0;
 	int nprinted = 0;
 	while (!list_isempty(args))
 		{
 		struct value v = list_first(args);
 		int printed = Value_IsEmpty(v) ? 0 : Value_Print(&v);
+			/* fprintf(stderr, "item printed=%d empty=%d\n", printed, Value_IsEmpty(v)); */
+			/* fprintf(stderr, "item type=%d printed=%d empty=%d\n", */
+			/* v.vtype, printed, Value_IsEmpty(v)); */
 		Value_Free(v);
-		if (printed)
+		args = list_rest(args);
+		if (printed && !list_isempty(args))
 			{
-			if (need_space)
-				Value_Print(&spc);   /* safe: we already know both sides printed */
-			need_space = 1;
+			Value_Print(&spc);  
 			nprinted += printed;
 			}
-		args = list_rest(args);
 		}
 	Value_Print(&nl);
 	return Value_Number(nprinted);
