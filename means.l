@@ -25,6 +25,7 @@
 "then"             { RETURN( THEN); }
 "is"               { RETURN( IS); }
 "are"              { RETURN( IS); }
+"like"             { RETURN( LIKE); }
 "if"               { RETURN( IF); }
 "while"            { RETURN( WHILE); }
 "else"             { RETURN( ELSE); }

@@ -44,14 +44,17 @@ struct value
 	struct mstring *mval;     /* owned C string when type == T_WORD */
 	struct list    *lval;     /* owned when type == T_LIST */
 	struct func    *fnval;     
+	int           initialized; /* Almost always 1; 0 for type but unassigned arguments */
 	};
 
 /**/
-/**/
+int  Value_IsInit(struct value v);          /* 1 if the value may be used */
+struct value Value_Init(struct value v, int init);   /* uninitialized = 0, initialized = 1 */
 struct value Value_Empty(void);
 struct value Value_Copy(struct value v);          /* returns an owned copy */
 void         Value_Free(struct value v);          /* free owned copy with this */
 int         Value_Print(const struct value *v);   /* number of items printed */
+/**/
 /* the Value_As* functions pull out a type from the Value abstraction */
 const char * Value_AsCStr(struct value v);
 double       Value_AsDecimal(struct value v);

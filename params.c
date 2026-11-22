@@ -36,21 +36,21 @@ struct param *param_append(struct param *list, const char *name, struct value in
 	return list;
 	}
 
-struct param *param_from_decl(const char *name, struct expr *e, struct scope *scope)
+struct param *param_from_decl(const char *name, struct expr *e, int init, struct scope *scope)
 	{
 
-struct vtypename vtypenames[] =
-{
-    {T_UNTYPED, "Untyped"},
-    {T_EMPTY,"Empty"},
-    {T_NUMBER, "Number"},
-    {T_DECIMAL, "Decimal"},
-    {T_BOOL,"Bool"},
-    {T_WORD,"Word"},
-    {T_LIST,"List"},
-    {T_FUNC,"Func"},
-    {T_ANY, "Any"}
-};
+	struct vtypename vtypenames[] =
+		{
+			{T_UNTYPED, "Untyped"},
+			{T_EMPTY,"Empty"},
+			{T_NUMBER, "Number"},
+			{T_DECIMAL, "Decimal"},
+			{T_BOOL,"Bool"},
+			{T_WORD,"Word"},
+			{T_LIST,"List"},
+			{T_FUNC,"Func"},
+			{T_ANY, "Any"}
+		};
 
 	int is_rest = (e && e->etype == EV_CALL && e->name &&
 	               !e->args && strcmp(e->name, "rest") == 0);
@@ -58,18 +58,20 @@ struct vtypename vtypenames[] =
 	struct value v = is_rest
 	                 ? Value_List(list_new())
 	                 : eval_expr(e, scope);
-	diagnose(DIAG_DEBUG, DBG_PARAMS, e->line, 0, "name: %s type %d (%s)", e->name, v.vtype, 
-		vtypenames[v.vtype].name);
+	v = Value_Init(v, init); /* init is 0 for not initialized, 1 for initialized */
+	
+	diagnose(DIAG_DEBUG, DBG_PARAMS, e->line, 0, "name: %s type %d (%s) init: %d", e->name, v.vtype,
+	         vtypenames[v.vtype].name, Value_IsInit(v));
 	struct param *p = param_new(name, v);
 	if (p && is_rest)
 		p->is_rest = 1;
 	return p;
 	}
 
-struct param *param_append_from_decl(struct param *list, const char *name,
-                                     struct expr *e, struct scope *scope)
+struct param *param_append_from_decl(struct param *list,  const char *name,
+                                     struct expr *e, int init, struct scope *scope)
 	{
-	struct param *p = param_from_decl(name, e, scope);
+	struct param *p = param_from_decl(name, e, init, scope);
 	if (!p)
 		return list;
 	if (!list)
@@ -226,39 +228,39 @@ report_match_failure(const char *name, match_result mr,
 void
 bind_fixed_params(struct func *f, struct value arguments, struct scope *scope)
 	{
-	struct list *lst;
+	struct list *lst = NULL;
 	struct param *p;
 	int i;
-	/**/
-	if (!f || Value_IsEmpty(arguments) || !Value_IsList(arguments))
-		/* ERROR: early return — diagnose “bad arguments” */
+	if (!f)
 		return;
-	lst = Value_AsList(arguments);
-	if (!lst)
-		return;
+	if (Value_IsList(arguments))
+		lst = Value_AsList(arguments);
 	i = 0;
 	for (p = f->params; p && i < func_param_count(f); p = p->next, i++)
 		{
 		struct value v;
-		enum vtype want;
-		/**/
-		if (list_isempty(lst))
+		enum vtype want = p->vtype;
+
+		if (!lst || list_isempty(lst))
 			{
-			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-			         "too few arguments for %s", func_name(f));
-			return;
+			/* missing argument: use the stored default */
+			v = Value_Copy(p->init);
 			}
-		v = list_first(lst);
-		want = p->vtype;
-		/* unwrap one-element list for a scalar parameter */
-		if (want != T_UNTYPED && want != T_ANY && want != T_LIST
-		        && Value_IsList(v)
-		        && list_length(Value_AsList(v)) == 1)
+		else
 			{
-			struct value elem = list_first(Value_AsList(v));
-			Value_Free(v);
-			v = elem;
+			v = list_first(lst);
+			/* unwrap one-element list for a scalar parameter */
+			if (want != T_UNTYPED && want != T_ANY && want != T_LIST
+			        && Value_IsList(v)
+			        && list_length(Value_AsList(v)) == 1)
+				{
+				struct value elem = list_first(Value_AsList(v));
+				Value_Free(v);
+				v = elem;
+				}
+			lst = list_rest(lst);
 			}
+
 		if (want != T_UNTYPED && want != T_ANY && want != Value_Type(v))
 			{
 			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
@@ -268,7 +270,6 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope)
 			}
 		sym_set_value(p->name, v, scope);
 		Value_Free(v);
-		lst = list_rest(lst);   /* new header; original remains for rest */
 		}
 	}
 

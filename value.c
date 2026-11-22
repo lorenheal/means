@@ -12,6 +12,19 @@ struct value Value_Empty(void)
 	return ret;
 	}
 
+int
+Value_IsInit(struct value v)
+{
+    return v.initialized;
+}
+
+struct value
+Value_Init(struct value v, int init)
+{
+    v.initialized = init;
+    return v;
+}
+
 struct value Value_Copy(struct value v) /* returns owned copy */
 	{
 	if (v.vtype == T_WORD && v.mval)

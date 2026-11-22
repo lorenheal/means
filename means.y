@@ -35,7 +35,7 @@ struct stmt *cur_head;
 %token <sval>  IDENT WORD
 %token <type>  TYPENAME
 
-%token THE THEN IS IF WHILE ELSE TO MEANS DO DONE RETURN
+%token THE THEN IS LIKE IF WHILE ELSE TO MEANS DO DONE RETURN
 %token AND PLUS MINUS TIMES OVER
 %token LOGICAL_AND LOGICAL_OR EXCLUSIVE_OR
 %token GREATER_THAN LESS_THAN EQUAL_TO UNEQUAL_TO AT_LEAST AT_MOST
@@ -137,23 +137,29 @@ funcdef
         }
     ;
 
+arglist
+    : expr                                { $$ = arglist_new($1); }
+    | arglist AND expr                    { $$ = arglist_append($3, $1); }
+    ;
+
 paramlist
     : /* empty */
         { $$ = NULL; }
     | THE IDENT IS expr
-        { $$ = param_from_decl($2, $4, defining_scope); free_expr($4); }
+        { $$ = param_from_decl($2, $4,1, defining_scope); free_expr($4); }
+    | THE IDENT IS LIKE expr
+        { $$ = param_from_decl($2, $5, 0,  defining_scope); free_expr($5); }
     | paramlist AND THE IDENT IS expr
-        { $$ = param_append_from_decl($1, $4, $6, defining_scope); free_expr($6); }
+        { $$ = param_append_from_decl($1, $4, $6, 1, defining_scope); free_expr($6); }
+    | paramlist AND THE IDENT IS LIKE expr
+        { $$ = param_append_from_decl($1, $4, $7, 0, defining_scope); free_expr($7); }
     ;
 
 call_stmt
-    : IDENT                               { $$ = stmt_call($1, NULL); }
-    | IDENT arglist                       { $$ = stmt_call($1, $2); }
-    ;
-
-arglist
-    : expr                                { $$ = arglist_new($1); }
-    | arglist AND expr                    { $$ = arglist_append($3, $1); }
+    : IDENT
+        { $$ = stmt_call($1, NULL); }
+    | IDENT arglist
+        { $$ = stmt_call($1, pack_if_multi($2)); }
     ;
 
 expr
@@ -180,8 +186,10 @@ primary
     | WORD                                { $$ = ev_word($1); }
     | BOOLVAL                             { $$ = ev_bool($1); }
     | THE IDENT                           { $$ = ev_var($2); }
-    | IDENT arglist                       { $$ = ev_call($1, $2); }
-    | IDENT                               { $$ = ev_call($1, NULL); }
+    | IDENT arglist
+        { $$ = ev_call($1, pack_if_multi($2)); }
+    | IDENT
+        { $$ = ev_call($1, NULL); }
     ;
 
 %%

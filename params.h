@@ -38,9 +38,9 @@ match_result params_match(const struct func *f, struct value *argv, int argc);
 
 struct param *param_new(const char *name, struct value init);
 struct param *param_append(struct param *list, const char *name, struct value init);
-struct param *param_from_decl(const char *name, struct expr *e, struct scope *scope);
+struct param *param_from_decl(const char *name, struct expr *e, int init, struct scope *scope);
 struct param *param_append_from_decl(struct param *list, const char *name,
-                                     struct expr *e, struct scope *scope);
+                                     struct expr *e, int init, struct scope *scope);
 
 void          param_free(struct param *list);
 void          bind_fixed_params(struct func *f, struct value arguments,
