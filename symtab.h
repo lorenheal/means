@@ -35,7 +35,8 @@ struct sym   *sym_lookup_or_create(const char *name, struct scope *scope);
 void          sym_set_value(const char *name, struct value v, struct scope *scope);
 void          sym_declare(const char *name, enum vtype type, struct scope *scope);
 
-#define sym_get_value(N,S) (sym_value(sym_find_in_scope((N),(S))))
+/* #define sym_get_value(N,S) (sym_value(sym_find_in_scope((N),(S)))) */
+struct value sym_get_value(char *name, struct scope *scope);
 
 void          sym_define_function(const char *name, struct func *f, struct scope *scope);
 struct func  *sym_find_function(const char *name, struct scope *scope);

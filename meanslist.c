@@ -254,7 +254,7 @@ int list_equal(const struct list *a, const struct list *b) {
 int print_list(const struct list *lst)
 	{
 	struct listnode *n;
-	int printed;
+	int printed = 0;
 	for (n = lst ? list_head(lst) : NULL; n; n = list_next(n))
 		{
 		printed = Value_Print(&n->val);

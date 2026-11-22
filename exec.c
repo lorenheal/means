@@ -58,58 +58,60 @@ eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out)
 static struct func *
 find_matching_func(const char *name, struct value *argv, int argc,
                    struct scope *scope)
-{
-    struct func *f = sym_find_function(name, scope);
-    while (f) {
-        if (params_match(f, argv, argc) == MATCH_OK)
-            return f;
-        f = func_next_overload(f);
-    }
-    return NULL;
-}
+	{
+	struct func *f = sym_find_function(name, scope);
+	while (f)
+		{
+		if (params_match(f, argv, argc) == MATCH_OK)
+			return f;
+		f = func_next_overload(f);
+		}
+	return NULL;
+	}
 struct value
 call_func(const char *name, struct argnode *args, struct scope *scope)
-{
-    int argc = 0;
-    struct value *argv = eval_args_for_match(args, scope, &argc);
-    struct func *f;
-    struct value arguments;
-    struct scope *local;
-    struct value result;
-    int i;
+	{
+	int argc = 0;
+	struct value *argv = eval_args_for_match(args, scope, &argc);
+	struct func *f;
+	struct value arguments;
+	struct scope *local;
+	struct value result;
+	int i;
 
-    f = find_matching_func(name, argv, argc, scope);
-    if (!f) {
-        report_match_failure(name, MATCH_TYPE_MISMATCH, NULL, argc);
-        /* or keep the last match_result from the search if you want the precise reason */
-        for (i = 0; i < argc; i++)
-            Value_Free(argv[i]);
-        free(argv);
-        return Value_Empty();
-    }
+	f = find_matching_func(name, argv, argc, scope);
+	if (!f)
+		{
+		report_match_failure(name, MATCH_TYPE_MISMATCH, NULL, argc);
+		/* or keep the last match_result from the search if you want the precise reason */
+		for (i = 0; i < argc; i++)
+			Value_Free(argv[i]);
+		free(argv);
+		return Value_Empty();
+		}
 
-    /* build the arguments list from the already-evaluated values */
-    arguments = Value_List(list_new());
-    for (i = 0; i < argc; i++)
-        list_append(argv[i], Value_AsList(arguments));
+	/* build the arguments list from the already-evaluated values */
+	arguments = Value_List(list_new());
+	for (i = 0; i < argc; i++)
+		list_append(argv[i], Value_AsList(arguments));
 
-    local = scope_new(func_name(f), func_lexical_scope(f));
-    sym_set_value("arguments", arguments, local);
-    if (func_param_count(f) > 0)
-        bind_fixed_params(f, arguments, local);
+	local = scope_new(func_name(f), func_lexical_scope(f));
+	sym_set_value("arguments", arguments, local);
+	if (func_param_count(f) > 0)
+		bind_fixed_params(f, arguments, local);
 
-    if (func_builtin(f))
-        result = func_builtin(f)(local);
-    else
-        result = exec_stmts(func_body(f), local);
+	if (func_builtin(f))
+		result = func_builtin(f)(local);
+	else
+		result = exec_stmts(func_body(f), local);
 
-    for (i = 0; i < argc; i++)
-        Value_Free(argv[i]);
-    free(argv);
-    Value_Free(arguments);
-    scope_free(local);
-    return result;
-}
+	for (i = 0; i < argc; i++)
+		Value_Free(argv[i]);
+	free(argv);
+	Value_Free(arguments);
+	scope_free(local);
+	return result;
+	}
 
 /*
 *return T_DECIMAL if either operand is decimal,
@@ -156,73 +158,100 @@ eval_expr(struct expr *e, struct scope *scope)
 			return Value_Copy(s->val);
 			}
 		case EV_BINOP:
-{
-    struct value l = eval_expr(e->left, scope);
-    struct value r = eval_expr(e->right, scope);
-    struct value result = Value_Empty();
+			{
+			struct value l = eval_expr(e->left, scope);
+			struct value r = eval_expr(e->right, scope);
+			struct value result = Value_Empty();
 
-    switch (e->op) {
-    /* logical — truth-value only */
-    case LOGICAL_AND:
-    case LOGICAL_OR:
-    case EXCLUSIVE_OR:
-    {
-        int lb = Value_IsTrue(l);
-        int rb = Value_IsTrue(r);
-        int res = (e->op == LOGICAL_AND) ? (lb && rb)
-                : (e->op == LOGICAL_OR)  ? (lb || rb)
-                :                          (lb != rb);
-        result = Value_Bool(res);
-        break;
-    }
+			switch (e->op)
+				{
+				/* logical — truth-value only */
+				case LOGICAL_AND:
+				case LOGICAL_OR:
+				case EXCLUSIVE_OR:
+					{
+					int lb = Value_IsTrue(l);
+					int rb = Value_IsTrue(r);
+					int res = (e->op == LOGICAL_AND) ? (lb && rb)
+					          : (e->op == LOGICAL_OR)  ? (lb || rb)
+					          :                          (lb != rb);
+					result = Value_Bool(res);
+					break;
+					}
 
-    /* everything else is numeric / comparison */
-    default:
-    {
-        enum vtype rt = result_type(l, r);
-        if (rt == T_UNTYPED) {
-            diagnose(DIAG_ERROR, DBG_EXEC, e->line, 0,
-                     "non-numeric operands for operator");
-            break;
-        }
-        double ld = as_double(l);
-        double rd = as_double(r);
-        int is_comparison = 0;
-        double res = 0.0;
+				/* everything else is numeric / comparison */
+				default:
+					{
+					enum vtype rt = result_type(l, r);
+					if (rt == T_UNTYPED)
+						{
+						diagnose(DIAG_ERROR, DBG_EXEC, e->line, 0,
+						         "non-numeric operands for operator");
+						break;
+						}
+					double ld = as_double(l);
+					double rd = as_double(r);
+					int is_comparison = 0;
+					double res = 0.0;
 
-        switch (e->op) {
-        case PLUS:         res = ld + rd; break;
-        case MINUS:        res = ld - rd; break;
-        case TIMES:        res = ld * rd; break;
-        case OVER:
-            if (rd == 0.0)
-                diagnose(DIAG_WARNING, DBG_USER, e->line, 0, "division by zero");
-            res = (rd != 0.0) ? ld / rd : 0.0;
-            break;
-        case GREATER_THAN: res = ld >  rd; is_comparison = 1; break;
-        case LESS_THAN:    res = ld <  rd; is_comparison = 1; break;
-        case EQUAL_TO:     res = ld == rd; is_comparison = 1; break;
-        case UNEQUAL_TO:   res = ld != rd; is_comparison = 1; break;
-        case AT_LEAST:     res = ld >= rd; is_comparison = 1; break;
-        case AT_MOST:      res = ld <= rd; is_comparison = 1; break;
-        default:
-            diagnose(DIAG_ERROR, DBG_EXEC, e->line, 0, "unknown operator");
-            break;
-        }
+					switch (e->op)
+						{
+						case PLUS:
+							res = ld + rd;
+							break;
+						case MINUS:
+							res = ld - rd;
+							break;
+						case TIMES:
+							res = ld * rd;
+							break;
+						case OVER:
+							if (rd == 0.0)
+								diagnose(DIAG_WARNING, DBG_USER, e->line, 0, "division by zero");
+							res = (rd != 0.0) ? ld / rd : 0.0;
+							break;
+						case GREATER_THAN:
+							res = ld >  rd;
+							is_comparison = 1;
+							break;
+						case LESS_THAN:
+							res = ld <  rd;
+							is_comparison = 1;
+							break;
+						case EQUAL_TO:
+							res = ld == rd;
+							is_comparison = 1;
+							break;
+						case UNEQUAL_TO:
+							res = ld != rd;
+							is_comparison = 1;
+							break;
+						case AT_LEAST:
+							res = ld >= rd;
+							is_comparison = 1;
+							break;
+						case AT_MOST:
+							res = ld <= rd;
+							is_comparison = 1;
+							break;
+						default:
+							diagnose(DIAG_ERROR, DBG_EXEC, e->line, 0, "unknown operator");
+							break;
+						}
 
-        if (is_comparison)
-            result = Value_Bool(res != 0.0);
-        else
-            result = (rt == T_DECIMAL) ? Value_Decimal(res)
-                                       : Value_Number((long)res);
-        break;
-    }
-    }
+					if (is_comparison)
+						result = Value_Bool(res != 0.0);
+					else
+						result = (rt == T_DECIMAL) ? Value_Decimal(res)
+						         : Value_Number((long)res);
+					break;
+					}
+				}
 
-    Value_Free(l);
-    Value_Free(r);
-    return result;
-}
+			Value_Free(l);
+			Value_Free(r);
+			return result;
+			}
 		case EV_CALL:
 			return call_func(e->name, e->args, scope);
 		case EV_LIST:
@@ -241,7 +270,7 @@ eval_expr(struct expr *e, struct scope *scope)
 			return z;
 
 		}
-	
+
 	}
 
 struct value

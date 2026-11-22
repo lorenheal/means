@@ -16,6 +16,21 @@ enum vtype
 	T_FUNC,
 	T_ANY=100
 	};
+struct vtypename { enum vtype vtype; char *name; };
+/*
+struct vtypename vtypenames[] = 
+{ 
+	{T_UNTYPED, "Untyped"},
+	{T_EMPTY,"Empty"},
+	{T_NUMBER, "Number"},
+	{T_DECIMAL, "Decimal"},
+	{T_BOOL,"Bool"},
+	{T_WORD,"Word"},
+	{T_LIST,"List"},
+	{T_FUNC,"Func"},
+	{T_ANY, "Any"}
+};
+*/
 
 struct list;          /* defined later */
 struct func;          /* defined later */

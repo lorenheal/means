@@ -6,7 +6,7 @@
 #include "mstring.h"
 
 
-struct value Value_Empty(void)  /* hhh */
+struct value Value_Empty(void) 
 	{
 	struct value ret = { .vtype = T_EMPTY };
 	return ret;
@@ -21,7 +21,7 @@ struct value Value_Copy(struct value v) /* returns owned copy */
 	return v;
 	}
 
-void Value_Free(struct value v) /* hhh */
+void Value_Free(struct value v)
 	{
 	/* DEBUG: double-free risk if caller also frees */
 	if ((v.vtype == T_WORD) && v.mval)
@@ -30,7 +30,7 @@ void Value_Free(struct value v) /* hhh */
 		list_decref(v.lval);
 	}
 
-int Value_Print(const struct value *v) /* hhh */
+int Value_Print(const struct value *v)
 	{
 	int printed = 0;
 	if(v)
@@ -64,59 +64,59 @@ int Value_Print(const struct value *v) /* hhh */
 	}
 
 long
-Value_AsNumber(struct value v) /* hhh */
+Value_AsNumber(struct value v)
 	{
 	return (v.vtype == T_NUMBER) ? v.ival : 0;
 	}
 
 double
-Value_AsDecimal(struct value v) /* hhh */
+Value_AsDecimal(struct value v)
 	{
 	return (v.vtype == T_DECIMAL) ? v.fval : 0.0;
 	}
 
 struct mstring *
-Value_AsWord(struct value v) /* hhh */
+Value_AsWord(struct value v)
 	{
 	return (v.vtype == T_WORD) ? v.mval : NULL;
 	}
 
 struct func *
-Value_AsFunc(struct value v) /* hhh */
+Value_AsFunc(struct value v)
 	{
 	return (v.vtype == T_FUNC) ? v.fnval : NULL;
 	}
 
 struct list *
-Value_AsList(struct value v) /* hhh */
+Value_AsList(struct value v)
 	{
 	return (v.vtype == T_LIST) ? v.lval : NULL;
 	}
 
 const char *
-Value_AsCStr(struct value v) /* hhh */
+Value_AsCStr(struct value v)
 	{
 	struct mstring *m = Value_AsWord(v);
 	return ((m) ? (mstring_cstr(m)) : (""));
 	}
 
-int Value_IsEmpty(struct value v) /* hhh */
+int Value_IsEmpty(struct value v)
 	{
 	return (T_EMPTY == v.vtype);
 	}
 
 enum vtype   Value_Type(struct value v)
 	{
-	return v.vtype;    /* hhh */
+	return v.vtype;   
 	}
 
-struct value Value_Bool(int b) /* hhh */
+struct value Value_Bool(int b)
 	{
 	struct value v = { .vtype = T_BOOL, .ival = b };
 	return v;
 	}
 
-struct value Value_Func(struct func *f) /* hhh */
+struct value Value_Func(struct func *f)
 	{
 	struct value v = Value_Empty();
 	if(f)
@@ -127,19 +127,19 @@ struct value Value_Func(struct func *f) /* hhh */
 	return v;
 	}
 
-struct value Value_Decimal(double x) /* hhh */
+struct value Value_Decimal(double x)
 	{
 	struct value v = { .vtype = T_DECIMAL, .fval = x };
 	return v;
 	}
 
-struct value Value_Number(long x) /* hhh */
+struct value Value_Number(long x)
 	{
 	struct value v = { .vtype = T_NUMBER, .ival = x };
 	return v;
 	}
 
-struct value Value_Word(const char *s) /* hhh */
+struct value Value_Word(const char *s) 
 	{
 	struct value v = Value_Empty();
 	if(s)
@@ -150,7 +150,7 @@ struct value Value_Word(const char *s) /* hhh */
 	return v;
 	}
 
-struct value Value_List(struct list *lst) /* hhh */
+struct value Value_List(struct list *lst)
 	{
 	struct value v = Value_Empty();
 	if (lst)
@@ -209,7 +209,7 @@ Value_IsTrue(struct value v)
 	{ if (v) v->is_const = 1; }
 */
 
-const char *Value_AsCstr(struct value *v) /* hhh */
+const char *Value_AsCstr(struct value *v)
 	{
 	if (v)
 		{
@@ -218,11 +218,12 @@ const char *Value_AsCstr(struct value *v) /* hhh */
 	return(NULL);
 	}
 
-int Value_Equal(struct value a, struct value b) /* hhh */
+int Value_Equal(struct value a, struct value b) 
 	{
 	if (a.vtype != b.vtype) return 0;
 	switch (a.vtype)
 		{
+		case T_EMPTY: return 1;
 		case T_NUMBER:
 			return a.ival == b.ival;
 		case T_DECIMAL:
@@ -238,7 +239,7 @@ int Value_Equal(struct value a, struct value b) /* hhh */
 			return memcmp(mstring_cstr(a.mval), mstring_cstr(b.mval), la) == 0;
 			}
 		case T_LIST:
-			return a.lval == b.lval;   /* WARN: identity; no deep compare */
+			return list_equal(a.lval, b.lval);
 		default:
 			return 0;
 		}

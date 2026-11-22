@@ -97,16 +97,13 @@ main(void)
     /* list of two words */
     {
         struct list *lst = list_new();
-        list_append(Value_Word("one"), lst);
-        list_append(Value_Word("two"), lst);
-		struct value w1 = Value_Word("one");
-struct value w2 = Value_Word("two");
-list_append(w1, lst);
-list_append(w2, lst);
-Value_Free(w1);          /* list holds the copies */
-Value_Free(w2);
-v = Value_List(lst);
-        v = Value_List(lst);                /* increments list refcount */
+        struct value w1 = Value_Word("one");
+        struct value w2 = Value_Word("two");
+        list_append(w1, lst);
+        list_append(w2, lst);
+        Value_Free(w1);          /* list holds the copies */
+        Value_Free(w2);
+        v = Value_List(lst);     /* increments list refcount */
         check("list type", Value_Type(v) == T_LIST);
         check("list IsList", Value_IsList(v));
         check("list not word", !Value_IsWord(v));
@@ -115,10 +112,9 @@ v = Value_List(lst);
         check("list length 2", list_length(got) == 2);
         check("list head non-NULL", list_head(got) != NULL);
         check("list refcount after Value_List", list_get_refcount(got) >= 1);
-        Value_Free(v);                      /* decrements; list may still be live */
-        list_free(lst);                     /* explicit free of the original */
+        Value_Free(v);           /* decrements */
+        list_free(lst);
     }
-
     /* ---------- Value_Copy / Value_Free ---------- */
 
     /* simple types: copy is bitwise, free is no-op */
@@ -146,8 +142,12 @@ v = Value_List(lst);
     /* list: copy shares the list and raises refcount */
     {
         struct list *lst = list_new();
-        list_append(Value_Word("a"), lst);
-        list_append(Value_Word("b"), lst);
+        struct value a = Value_Word("a");
+        struct value b = Value_Word("b");
+        list_append(a, lst);
+        list_append(b, lst);
+        Value_Free(a);
+        Value_Free(b);
         v = Value_List(lst);
         int rc0 = list_get_refcount(Value_AsList(v));
         c = Value_Copy(v);

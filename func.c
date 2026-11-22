@@ -5,7 +5,7 @@
 #include "func.h"
 #include "params.h"
 
-struct expr; 
+struct expr;
 
 struct func *
 func_new(void)
@@ -82,7 +82,7 @@ func_define(char *name, struct param *params, struct stmt *body,
 	f->params = params;
 	f->body = body;
 	f->lexical_scope = scope;
-		for (p = params; p; p = p->next)
+	for (p = params; p; p = p->next)
 		n++;
 	/* FIXME above should use accessors */
 	f->param_count = n;
@@ -145,9 +145,9 @@ func_free(struct func *f)
 
 int
 func_is_rest(const struct func *f)
-{
-    return f && f->is_rest;   
-}
+	{
+	return f && f->is_rest;
+	}
 
 const char *
 func_name(const struct func *f)

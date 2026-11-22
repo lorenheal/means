@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
 	int opt;
 
 	diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0,
-         "ST_CALL=%d ST_RETURN=%d ST_BLOCK=%d\n",
-         ST_CALL, ST_RETURN, ST_BLOCK);
+	         "ST_CALL=%d ST_RETURN=%d ST_BLOCK=%d\n",
+	         ST_CALL, ST_RETURN, ST_BLOCK);
 	diagnose(DIAG_DEBUG, DBG_GETOPT, 0, 0, "optstring: %s\n", optstring);
 
 	while ((opt = getopt(argc, argv, optstring)) != -1)

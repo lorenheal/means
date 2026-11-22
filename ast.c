@@ -146,11 +146,11 @@ ev_bool(int b)
 	}
 
 struct expr *ev_list(struct argnode *nodes)
-{
-    struct expr *e = expr_new(EV_LIST);   /* new etype */
-    e->args = nodes;                      /* reuse the existing argnode chain */
-    return e;
-} 
+	{
+	struct expr *e = expr_new(EV_LIST);   /* new etype */
+	e->args = nodes;                      /* reuse the existing argnode chain */
+	return e;
+	}
 struct expr *
 ev_var(char *name)
 	{
@@ -170,117 +170,137 @@ ev_call(char *name, struct argnode *args)
 
 /* for tree walking */
 /* in ast.c — one-liners */
-struct expr *expr_left(const struct expr *e)  { return e ? e->left  : NULL; }
-struct expr *expr_right(const struct expr *e) { return e ? e->right : NULL; }
-struct stmt *stmt_body(const struct stmt *s)  { return s ? s->body  : NULL; }
-struct stmt *stmt_else(const struct stmt *s)  { return s ? s->else_body : NULL; }
-struct stmt *stmt_next(const struct stmt *s)  { return s ? s->next  : NULL; }
+struct expr *expr_left(const struct expr *e)
+	{
+	return e ? e->left  : NULL;
+	}
+struct expr *expr_right(const struct expr *e)
+	{
+	return e ? e->right : NULL;
+	}
+struct stmt *stmt_body(const struct stmt *s)
+	{
+	return s ? s->body  : NULL;
+	}
+struct stmt *stmt_else(const struct stmt *s)
+	{
+	return s ? s->else_body : NULL;
+	}
+struct stmt *stmt_next(const struct stmt *s)
+	{
+	return s ? s->next  : NULL;
+	}
 
 void
 free_expr(struct expr *e)
-{
-    if (!e) return;   /* WARN: args chain not freed */
-    free_expr(expr_left(e));
-    free_expr(expr_right(e));
-    /* free args list if present */
-    free(e->name);
-    Value_Free(e->val);
-    free(e);
-}
+	{
+	if (!e) return;   /* WARN: args chain not freed */
+	free_expr(expr_left(e));
+	free_expr(expr_right(e));
+	/* free args list if present */
+	free(e->name);
+	Value_Free(e->val);
+	free(e);
+	}
 
 void
 free_stmts(struct stmt *s)
-{
-    while (s) {
-		 /* WARN: args not freed on ST_CALL / ST_RETURN */
-        struct stmt *next = stmt_next(s);
-        free_expr(s->expr);
-        free_stmts(stmt_body(s));
-        free_stmts(stmt_else(s));
-        free(s->name);
-        free(s);
-        s = next;
-    }
-}
+	{
+	while (s)
+		{
+		/* WARN: args not freed on ST_CALL / ST_RETURN */
+		struct stmt *next = stmt_next(s);
+		free_expr(s->expr);
+		free_stmts(stmt_body(s));
+		free_stmts(stmt_else(s));
+		free(s->name);
+		free(s);
+		s = next;
+		}
+	}
 
 void
 print_expr(struct expr *e)
-{
-    if (!e)
-        return;
-    printf("(");
-    switch (e->etype) {
-    case EV_NUM:
-    case EV_WORD:
-    case EV_BOOL:
-        Value_Print(&e->val);
-        break;
-    case EV_VAR:
-        printf("%s", e->name ? e->name : "?");
-        break;
-    case EV_BINOP:
-        print_expr(expr_left(e));
-        printf(" %d ", e->op);          /* or a name for the op */
-        print_expr(expr_right(e));
-        break;
-    case EV_CALL:
-        printf("%s", e->name ? e->name : "?");
-        /* walk e->args if you have an arg printer */
-        break;
-    default:
-        printf("?");
-        break;
-    }
-    printf(")");
-}
+	{
+	if (!e)
+		return;
+	printf("(");
+	switch (e->etype)
+		{
+		case EV_NUM:
+		case EV_WORD:
+		case EV_BOOL:
+			Value_Print(&e->val);
+			break;
+		case EV_VAR:
+			printf("%s", e->name ? e->name : "?");
+			break;
+		case EV_BINOP:
+			print_expr(expr_left(e));
+			printf(" %d ", e->op);          /* or a name for the op */
+			print_expr(expr_right(e));
+			break;
+		case EV_CALL:
+			printf("%s", e->name ? e->name : "?");
+			/* walk e->args if you have an arg printer */
+			break;
+		default:
+			printf("?");
+			break;
+		}
+	printf(")");
+	}
 
 void
 print_stmts(struct stmt *s)
-{
-    while (s) {
-        struct stmt *next = stmt_next(s);
-        printf("[");
-        switch (s->stype) {
-        case ST_ASSIGN:
-            printf("assign %s = ", s->name ? s->name : "?");
-            print_expr(s->expr);
-            break;
-        /* case ST_PRINT:         
-            printf("print ");
-            print_expr(s->expr);
-            break;*/
-        case ST_RETURN:
-            printf("return ");
-            print_expr(s->expr);
-            break;
-        case ST_IF:
-            printf("if ");
-            print_expr(s->expr);
-            printf(" then ");
-            print_stmts(stmt_body(s));
-            if (stmt_else(s)) {
-                printf(" else ");
-                print_stmts(stmt_else(s));
-            }
-            break;
-        case ST_WHILE:
-            printf("while ");
-            print_expr(s->expr);
-            printf(" ");
-            print_stmts(stmt_body(s));
-            break;
-        case ST_CALL:
-            printf("call %s", s->name ? s->name : "?");
-            break;
-        case ST_BLOCK:
-            printf("block ");
-            print_stmts(stmt_body(s));
-            break;
-        default:
-            printf("stmt %d", s->stype);
-            break;
-        }
-        printf("]\n");
-        s = next;
-    }
-}
+	{
+	while (s)
+		{
+		struct stmt *next = stmt_next(s);
+		printf("[");
+		switch (s->stype)
+			{
+			case ST_ASSIGN:
+				printf("assign %s = ", s->name ? s->name : "?");
+				print_expr(s->expr);
+				break;
+			/* case ST_PRINT:
+			    printf("print ");
+			    print_expr(s->expr);
+			    break;*/
+			case ST_RETURN:
+				printf("return ");
+				print_expr(s->expr);
+				break;
+			case ST_IF:
+				printf("if ");
+				print_expr(s->expr);
+				printf(" then ");
+				print_stmts(stmt_body(s));
+				if (stmt_else(s))
+					{
+					printf(" else ");
+					print_stmts(stmt_else(s));
+					}
+				break;
+			case ST_WHILE:
+				printf("while ");
+				print_expr(s->expr);
+				printf(" ");
+				print_stmts(stmt_body(s));
+				break;
+			case ST_CALL:
+				printf("call %s", s->name ? s->name : "?");
+				break;
+			case ST_BLOCK:
+				printf("block ");
+				print_stmts(stmt_body(s));
+				break;
+			default:
+				printf("stmt %d", s->stype);
+				break;
+			}
+		printf("]\n");
+		s = next;
+		}
+	}

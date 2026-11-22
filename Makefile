@@ -18,10 +18,20 @@ TARGET  = means
 
 aLll: $(TARGET)
 
+TESTS = test-mstring test-value test-print test-equal
+
+test: $(TESTS) 
+
 test-value: test-value.o value.o meanslist.o mstring.o help.o
 	$(CC) -o $@ $^
 
 test-mstring: test-mstring.o value.o meanslist.o mstring.o help.o
+	$(CC) -o $@ $^
+
+test-print: test-print.o value.o meanslist.o mstring.o help.o
+	$(CC) -o $@ $^
+
+test-equal: test-equal.o value.o meanslist.o mstring.o help.o
 	$(CC) -o $@ $^
 
 $(TARGET): $(OBJS)
@@ -48,7 +58,8 @@ means.lex.c: means.l means.tab.h
 -include $(OBJS:.o=.d)
 
 clean:
-	rm -f $(TARGET) $(OBJS) $(OBJS:.o=.d) $(GEN) means.output
+	rm -f $(TARGET) $(OBJS) $(OBJS:.o=.d) $(GEN) means.output \
+		  $(TESTS) $(addsuffix .o,$(TESTS)) $(addsuffix .d,$(TESTS))
 
 backup:
 	@read -p "Comment for backup: " comment; \
@@ -56,7 +67,7 @@ backup:
 	mkdir -p old; \
 	echo "$$comment" > means-$${stamp}.txt; \
 	tar cf old/means-$${stamp}.tar means.y means.l means-$${stamp}.txt \
-		$(SRCS) test-value.c Makefile DESIGN.md todo.md tests *.h ;  \
+		$(SRCS) $(addsuffix .c,$(TESTS)) Makefile DESIGN.md todo.md tests *.h ;  \
 	echo "backed up to old/means-$${stamp}.tar ($$comment)"; \
 	tar -tvf old/means-$${stamp}.tar ; \
 	mv means-$${stamp}.txt old ; \

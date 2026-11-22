@@ -38,7 +38,7 @@ static struct sym *sym_new(void)
 		diagnose(DIAG_ERROR, DBG_SYMTAB, 0, 0, "out of memory");
 		exit(1);
 		}
-	return(sym);	
+	return(sym);
 	}
 
 
@@ -106,8 +106,8 @@ sym_find_function(const char *name, struct scope *scope)
 	struct sym *s = sym_find(name, scope);
 	/**/
 	diagnose(DIAG_DEBUG, (DBG_SYMTAB & DBG_VERBOSE), 0, 0,
-         "find %s in %p -> %p",
-         name, (void *)scope, (void *)s);
+	         "find %s in %p -> %p",
+	         name, (void *)scope, (void *)s);
 	if (s && s->vtype == T_FUNC)
 		return s->func;
 	return NULL;
@@ -120,7 +120,7 @@ sym_set_value(const char *name, struct value v, struct scope *scope)
 	if(name && strcmp("x", name) == 0)
 		{
 		diagnose(DIAG_DEBUG, DBG_SYMTAB, 0, 0,
-			 "x: set %s type %d found sym %p", name, Value_Type(v), (void *) s);
+		         "x: set %s type %d found sym %p", name, Value_Type(v), (void *) s);
 		}
 	if (!s)
 		{
@@ -131,7 +131,7 @@ sym_set_value(const char *name, struct value v, struct scope *scope)
 		}
 	Value_Free(s->val);
 	s->val = Value_Copy(v);
-	s->vtype = v.vtype;         
+	s->vtype = v.vtype;
 	}
 
 struct value sym_value(struct sym *s)
@@ -143,6 +143,22 @@ struct value sym_value(struct sym *s)
 		diagnose(DIAG_DEBUG,DBG_SYMTAB,0,0,"NULL sym in sym_value");
 	return ret;
 	}
+
+struct value sym_get_value(char *name, struct scope *scope)
+	{
+	struct value ret = Value_Empty();
+	struct sym *s = NULL;
+	if (name)
+		{
+		s = sym_find_in_scope(name, scope);
+		}
+	if(s)
+		{
+		ret = sym_value(s);
+		}
+	return (ret);
+	}
+
 /*
 These may not be needed.
 struct sym   *sym_lookup_or_create(const char *name, struct scope *scope);

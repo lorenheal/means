@@ -51,6 +51,7 @@ struct listnode *list_tail(const struct list *lst);
 int list_get_refcount(const struct list *lst);
 int list_incref(struct list *lst);
 int list_decref(struct list *lst);
+int list_equal(const struct list *a, const struct list *b);
 
 struct value listnode_val(const struct listnode *n);
 struct listnode *listnode_next(const struct listnode *n);

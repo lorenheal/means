@@ -38,13 +38,28 @@ struct param *param_append(struct param *list, const char *name, struct value in
 
 struct param *param_from_decl(const char *name, struct expr *e, struct scope *scope)
 	{
+
+struct vtypename vtypenames[] =
+{
+    {T_UNTYPED, "Untyped"},
+    {T_EMPTY,"Empty"},
+    {T_NUMBER, "Number"},
+    {T_DECIMAL, "Decimal"},
+    {T_BOOL,"Bool"},
+    {T_WORD,"Word"},
+    {T_LIST,"List"},
+    {T_FUNC,"Func"},
+    {T_ANY, "Any"}
+};
+
 	int is_rest = (e && e->etype == EV_CALL && e->name &&
 	               !e->args && strcmp(e->name, "rest") == 0);
 
 	struct value v = is_rest
 	                 ? Value_List(list_new())
 	                 : eval_expr(e, scope);
-
+	diagnose(DIAG_DEBUG, DBG_PARAMS, e->line, 0, "name: %s type %d (%s)", e->name, v.vtype, 
+		vtypenames[v.vtype].name);
 	struct param *p = param_new(name, v);
 	if (p && is_rest)
 		p->is_rest = 1;
@@ -129,54 +144,54 @@ arglist_free(struct argnode *list)
 
 match_result
 params_match(const struct func *f, struct value *argv, int argc)
-    {
-    match_result result = MATCH_OK;
-    const struct param *p;
-    int i, fixed;
+	{
+	match_result result = MATCH_OK;
+	const struct param *p;
+	int i, fixed;
 
-    if (!f)
-        result = MATCH_NULL_FUNC;
-    else
-        {
-        fixed = func_param_count(f);
+	if (!f)
+		result = MATCH_NULL_FUNC;
+	else
+		{
+		fixed = func_param_count(f);
 
-        if (!(f->is_rest && fixed == 0))   /* pure-rest zero-arg is always OK */
-            {
-            if (argc < fixed)
-                result = MATCH_TOO_FEW;
-            else if (argc > fixed && !func_is_rest(f))
-                result = MATCH_TOO_MANY;
-            else
-                {
-                for (p = f->params, i = 0;
-                     p && i < fixed && result == MATCH_OK;
-                     p = p->next, i++)
-                    {
-                    enum vtype want = p->vtype;
-                    struct value got;
+		if (!(f->is_rest && fixed == 0))   /* pure-rest zero-arg is always OK */
+			{
+			if (argc < fixed)
+				result = MATCH_TOO_FEW;
+			else if (argc > fixed && !func_is_rest(f))
+				result = MATCH_TOO_MANY;
+			else
+				{
+				for (p = f->params, i = 0;
+				        p && i < fixed && result == MATCH_OK;
+				        p = p->next, i++)
+					{
+					enum vtype want = p->vtype;
+					struct value got;
 
-                    if (want == T_UNTYPED || want == T_ANY)
-                        continue;
+					if (want == T_UNTYPED || want == T_ANY)
+						continue;
 
-                    got = argv[i];
-                    if (want != T_LIST
-                            && Value_IsList(got)
-                            && list_length(Value_AsList(got)) == 1)
-                        got = list_first(Value_AsList(got));
+					got = argv[i];
+					if (want != T_LIST
+					        && Value_IsList(got)
+					        && list_length(Value_AsList(got)) == 1)
+						got = list_first(Value_AsList(got));
 
-                    if (want != Value_Type(got))
-                        {
-                        diagnose(DIAG_DEBUG, DBG_PARAMS, 0, 0,
-                                 "type mismatch want %d got %d",
-                                 want, Value_Type(got));
-                        result = MATCH_TYPE_MISMATCH;
-                        }
-                    }
-                }
-            }
-        }
-    return result;
-    }
+					if (want != Value_Type(got))
+						{
+						diagnose(DIAG_DEBUG, DBG_PARAMS, 0, 0,
+						         "type mismatch want %d got %d",
+						         want, Value_Type(got));
+						result = MATCH_TYPE_MISMATCH;
+						}
+					}
+				}
+			}
+		}
+	return result;
+	}
 
 void
 report_match_failure(const char *name, match_result mr,
