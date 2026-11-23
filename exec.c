@@ -57,17 +57,20 @@ eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out) /*
 
 static struct func *
 find_matching_func(const char *name, struct value *argv, int argc, /* def */
-                   struct scope *scope)
-	{
-	struct func *f = sym_find_function(name, scope);
-	while (f)
-		{
-		if (params_match(f, argv, argc) == MATCH_OK)
-			return f;
-		f = func_next_overload(f);
-		}
-	return NULL;
-	}
+                   struct scope *scope, match_result *out_mr)
+{
+    struct func *f = sym_find_function(name, scope);
+    match_result mr = MATCH_TYPE_MISMATCH;
+    while (f) {
+        mr = params_match(f, argv, argc);
+        if (mr == MATCH_OK)
+            break;
+        f = func_next_overload(f);
+    }
+    if (out_mr)
+        *out_mr = mr;
+    return f;   /* NULL if none matched */
+}
 
 struct value
 call_func(const char *name, struct argnode *args, struct scope *scope) /* def */
@@ -80,18 +83,8 @@ call_func(const char *name, struct argnode *args, struct scope *scope) /* def */
 	struct scope *local = NULL;
 	struct value result = Value_Empty();
 	int i;
-	struct func *cand;
 	struct func *last = NULL;
-	for (cand = sym_find_function(name, scope); cand; cand = func_next_overload(cand))
-		{
-		last = cand;
-		mr = params_match(cand, argv, argc);
-		if (mr == MATCH_OK)
-			{
-			f = cand;
-			break;
-			}
-		}
+	f = find_matching_func(name, argv, argc, scope, &mr);
 	diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "cf: match %s %d\n", 
 		((f && f->name)?(f->name):("(null)")), argc);
 	if (f)
