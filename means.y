@@ -40,6 +40,7 @@ struct stmt *cur_head;
 %token LOGICAL_AND LOGICAL_OR EXCLUSIVE_OR
 %token GREATER_THAN LESS_THAN EQUAL_TO UNEQUAL_TO AT_LEAST AT_MOST
 %token QUANTITY END CONSTANT STAYS DOT
+%token EMPTY
 
 %type <eptr>   expr primary
 %type <sptr>   statement assignment return_stmt if_stmt while_stmt call_stmt
@@ -146,9 +147,9 @@ paramlist
     : /* empty */
         { $$ = NULL; }
     | THE IDENT IS expr
-        { $$ = param_from_decl($2, $4,1, defining_scope); free_expr($4); }
+        { $$ = param_from_decl($2, $4, 1, defining_scope); free_expr($4); }
     | THE IDENT IS LIKE expr
-        { $$ = param_from_decl($2, $5, 0,  defining_scope); free_expr($5); }
+        { $$ = param_from_decl($2, $5, 0, defining_scope); free_expr($5); }
     | paramlist AND THE IDENT IS expr
         { $$ = param_append_from_decl($1, $4, $6, 1, defining_scope); free_expr($6); }
     | paramlist AND THE IDENT IS LIKE expr
@@ -185,6 +186,7 @@ primary
     | DECIMAL                             { $$ = ev_decimal($1); }
     | WORD                                { $$ = ev_word($1); }
     | BOOLVAL                             { $$ = ev_bool($1); }
+    | EMPTY                               { $$ = ev_list(NULL); }
     | THE IDENT                           { $$ = ev_var($2); }
     | IDENT arglist
         { $$ = ev_call($1, pack_if_multi($2)); }

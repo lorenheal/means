@@ -1,16 +1,16 @@
 the s is "hello".
-print length of the s.
+print length the s.
 #5
-print first of the s.
+print first the s.
 #h
-print last of the s.
+print last the s.
 #o
-print rest of the s.
+print rest the s.
 #ello
 print the s.
 #hello
  # split a string
-the t is split of a string s.
+the t is split the s.
 print the s.
 #h
 print the t.

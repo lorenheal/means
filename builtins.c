@@ -28,7 +28,6 @@ static struct value builtin_space(struct scope *scope);
 static struct value builtin_newline(struct scope *scope);
 static struct value builtin_length(struct scope *);
 static struct value builtin_find(struct scope *);
-static struct value builtin_empty(struct scope *);
 static struct value builtin_exit(struct scope *);
 static struct value builtin_read(struct scope *);
 static struct value builtin_first(struct scope *);
@@ -58,7 +57,6 @@ static const struct builtin_desc builtins[] =
 		{ "print",   builtin_print,   0, 1, NULL },
 		{ "space",   builtin_space,   0, 1, NULL },
 		{ "newline", builtin_newline, 0, 1, NULL },
-		{ "empty",   builtin_empty,   0, 1, NULL },
 		{ "length",  builtin_length,  1, 0, ty_1_any },
 		{ "find",    builtin_find,    2, 0, ty_2_any_list },
 		{ "find",    builtin_find,    2, 0, ty_2_word_word },
@@ -141,9 +139,6 @@ builtin_print(struct scope *scope)
 		{
 		struct value v = list_first(args);
 		int printed = Value_IsEmpty(v) ? 0 : Value_Print(&v);
-			/* fprintf(stderr, "item printed=%d empty=%d\n", printed, Value_IsEmpty(v)); */
-			/* fprintf(stderr, "item type=%d printed=%d empty=%d\n", */
-			/* v.vtype, printed, Value_IsEmpty(v)); */
 		Value_Free(v);
 		args = list_rest(args);
 		if (printed && !list_isempty(args))
@@ -218,13 +213,6 @@ optional_count(struct scope *scope)
 	return n > 0 ? n : 1;
 	}
 */
-
-static struct value builtin_empty(struct scope *scope)
-	{
-	(void)scope;
-	struct value v = Value_List(list_new());
-	return v;
-	}
 
 static struct value builtin_space(struct scope *scope)
 	{

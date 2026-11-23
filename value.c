@@ -12,16 +12,24 @@ struct value Value_Empty(void) /* def */
 	return ret;
 	}
 
+/*
+* Together with Value_Empty, Value_IsInit() and Value_UnInit() manage
+* whether a (eventual variable or) function parameter is declared but
+* undefined (unitialized) or as is most common, initialized. Since means
+* variable only come into existence when given a value, the uninitialized
+* state is for the rare occurrence of wanting a function parameter to
+* be required.
+*/
+
 int
 Value_IsInit(struct value v) /* def */
 {
     return v.initialized;
 }
 
-struct value
-Value_Init(struct value v, int init) /* def */
+struct value Value_Uninit(struct value v) /* def */
 {
-    v.initialized = init;
+    v.initialized = 0;
     return v;
 }
 
@@ -125,7 +133,9 @@ enum vtype   Value_Type(struct value v) /* def */
 
 struct value Value_Bool(int b) /* def */
 	{
-	struct value v = { .vtype = T_BOOL, .ival = b };
+	struct value v = Value_Empty();
+	v.vtype = T_BOOL; 
+	v.ival = b ;
 	return v;
 	}
 
@@ -142,13 +152,17 @@ struct value Value_Func(struct func *f) /* def */
 
 struct value Value_Decimal(double x) /* def */
 	{
-	struct value v = { .vtype = T_DECIMAL, .fval = x };
+	struct value v = Value_Empty();
+	v.vtype = T_DECIMAL;
+	v.fval = x ;
 	return v;
 	}
 
 struct value Value_Number(long x) /* def */
 	{
-	struct value v = { .vtype = T_NUMBER, .ival = x };
+	struct value v = Value_Empty();
+	v.vtype = T_NUMBER; 
+	v.ival = x ;
 	return v;
 	}
 

@@ -1,0 +1,303 @@
+the args are 1 and 2 and "three".
+the blargs are "Point 1" and "b" and "pt three".
+
+ #list argument defaults to empty
+ TO show the argues are empty  MEANS TO
+DO
+	print "[" and the argues and "]" .
+DONE.
+
+ # list argument required
+TO prove the argues are like empty MEANS TO
+DO
+	print "[" and the argues and "]" .
+DONE.
+
+show.
+prove.
+#prove: Too few arguments (got 0, need 1)
+show empty.
+#[ ]
+prove empty.
+#[ ]
+show 1 and 2.
+#[ 1 2 ] 
+prove 1 and 2.
+#[ 1 2 ] 
+show empty "1" and "2".
+#[ ]
+prove empty "1" and "2".
+#[ ]
+show empty and "1" and "2".
+#[ 1 2 ]
+prove empty and "2" and "1".
+#[ 2 1 ]
+show the args.
+#[ 1 2 three ]
+prove the blargs.
+#[ Point 1 b pt three ]
+show empty the args.
+#[ ]
+prove empty the blargs.
+#[ ]
+=== EXPECTED ===
+prove: Too few arguments (got 0, need 1)
+[ ]
+[ ]
+[ 1 2 ] 
+[ 1 2 ] 
+[ ]
+[ ]
+[ 1 2 ]
+[ 2 1 ]
+[ 1 2 three ]
+[ Point 1 b pt three ]
+[ ]
+[ ]
+0000000   p   r   o   v   e   :       T   o   o       f   e   w       a
+0000010   r   g   u   m   e   n   t   s       (   g   o   t       0   ,
+0000020       n   e   e   d       1   )  \n   [       ]  \n   [       ]
+0000030  \n   [       1       2       ]      \n   [       1       2    
+0000040   ]      \n   [       ]  \n   [       ]  \n   [       1       2
+0000050       ]  \n   [       2       1       ]  \n   [       1       2
+0000060       t   h   r   e   e       ]  \n   [       P   o   i   n   t
+0000070       1       b       p   t       t   h   r   e   e       ]  \n
+0000080   [       ]  \n   [       ]  \n                                
+0000088
+=== ACTUAL ===
+line 5: name: empty type 6 (List) init: 1
+line 11: name: empty type 6 (List) init: 0
+exec stype=0
+
+exec stype=0
+
+exec stype=4
+
+pm: show argues 1
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+pm: prove argues 0
+
+prove: too few arguments (got 0, need 1)
+ST_CALL received empty=1
+
+exec stype=4
+
+arg etype=6 vtype=6
+pm: show argues 1
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+arg etype=6 vtype=6
+pm: prove argues 0
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+arg etype=3 vtype=6
+pm: show argues 1
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+arg etype=3 vtype=6
+pm: prove argues 0
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+arg etype=3 vtype=6
+arg etype=6 vtype=6
+pm: show argues 1
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+arg etype=3 vtype=6
+arg etype=6 vtype=6
+pm: prove argues 0
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+arg etype=3 vtype=6
+pm: show argues 1
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+arg etype=3 vtype=6
+pm: prove argues 0
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+lookup args type 6
+arg etype=4 vtype=6
+pm: show argues 1
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+lookup blargs type 6
+arg etype=4 vtype=6
+pm: prove argues 0
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+lookup args type 6
+arg etype=4 vtype=6
+arg etype=6 vtype=6
+pm: show argues 1
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+exec stype=4
+
+lookup blargs type 6
+arg etype=4 vtype=6
+arg etype=6 vtype=6
+pm: prove argues 0
+
+exec stype=5
+
+exec stype=4
+
+lookup argues type 6
+arg etype=3 vtype=6
+ST_CALL received empty=0
+
+ST_CALL received empty=1
+
+[ ]
+[ ]
+[ ]
+[ 1 2 ]
+[ 1 2 ]
+[ ]
+[ ]
+[ 1 2 ]
+[ 2 1 ]
+[ 1 2 three ]
+[ Point 1 b pt three ]
+[ ]
+[ ]
+0000000   [       ]  \n   [       ]  \n   [       ]  \n   [       1    
+0000010   2       ]  \n   [       1       2       ]  \n   [       ]  \n
+0000020   [       ]  \n   [       1       2       ]  \n   [       2    
+0000030   1       ]  \n   [       1       2       t   h   r   e   e    
+0000040   ]  \n   [       P   o   i   n   t       1       b       p   t
+0000050       t   h   r   e   e       ]  \n   [       ]  \n   [       ]
+0000060  \n                                                            
+0000061

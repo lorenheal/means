@@ -131,7 +131,7 @@ sym_set_value(const char *name, struct value v, struct scope *scope) /* def */
 		}
 	Value_Free(s->val);
 	s->val = Value_Copy(v);
-	s->vtype = v.vtype;
+	s->vtype = Value_Type(v);
 	}
 
 struct value sym_value(struct sym *s) /* def */

@@ -20,10 +20,10 @@ DO
 	print "p[" and the argue and "]pnr" .
 DONE.
 
-show.
-#s[ 0 ]snd   
 prove.
 #prove: Too few arguments (got 0, need 1)
+show.
+#s[ 0 ]snd   
 show empty.
 prove empty.
 #p mistmatch

@@ -58,7 +58,8 @@ struct param *param_from_decl(const char *name, struct expr *e, int init, struct
 	struct value v = is_rest
 	                 ? Value_List(list_new())
 	                 : eval_expr(e, scope);
-	v = Value_Init(v, init); /* init is 0 for not initialized, 1 for initialized */
+	if(!init)
+		v = Value_Uninit(v);
 	
 	diagnose(DIAG_DEBUG, DBG_PARAMS, e->line, 0, "name: %s type %d (%s) init: %d", e->name, v.vtype,
 	         vtypenames[v.vtype].name, Value_IsInit(v));
@@ -157,8 +158,11 @@ params_match(const struct func *f, struct value *argv, int argc) /* def */
 		fixed = func_param_count(f);
 		required = 0;
 		for (p = f->params; p; p = p->next)
+			{	
+			diagnose(DIAG_DEBUG,DBG_PARAMS,0,0,"pm: %s %s %d\n",f->name,(p->name?p->name:"()"), Value_IsInit(p->init));
 			if (!Value_IsInit(p->init))
 				required++;
+			}
 		if (!(f->is_rest && fixed == 0))
 			{
 			if (argc < required)

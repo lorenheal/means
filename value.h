@@ -50,6 +50,7 @@ struct value
 /**/
 int  Value_IsInit(struct value v);          /* 1 if the value may be used */
 struct value Value_Init(struct value v, int init);   /* uninitialized = 0, initialized = 1 */
+struct value Value_Uninit(struct value v);  /* makes v uninitialized  */
 struct value Value_Empty(void);
 struct value Value_Copy(struct value v);          /* returns an owned copy */
 void         Value_Free(struct value v);          /* free owned copy with this */

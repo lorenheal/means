@@ -92,6 +92,8 @@ call_func(const char *name, struct argnode *args, struct scope *scope) /* def */
 			break;
 			}
 		}
+	diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "cf: match %s %d\n", 
+		((f && f->name)?(f->name):("(null)")), argc);
 	if (f)
 		{
 		if (argc > 0)

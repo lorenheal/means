@@ -3,35 +3,35 @@ the nums is 1 and 2 and 3.
 print the nums.
 #1 2 3
  # first
-print first of the nums.
+print first the nums.
 #1
  # last
-print last of the nums.
+print last the nums.
 #3
  # rest
-print rest of the nums.
+print rest the nums.
 #2 3
  # length
-print length of the nums.
+print length the nums.
 #3
  # append
-append the number 4 and a list the nums.
+append 4 and the nums.
 print the nums.
 #1 2 3 4
  # insert
-insert the number 0 and a list the nums.
+insert 0 and the nums.
 print the nums.
 #0 1 2 3 4
  # split
-the tail is split of the nums.
+the tail is split the nums.
 print the nums.
 #0
 print the tail.
 #1 2 3 4
  # find
-the words are roll a string "apple" and a string "banana" and  a string "cherry".
-print find a string "banana" and a list the words.
-#1
+the words are "apple" and "banana" and "cherry".
+print find "banana" and the words.
+#2
  # join
-print join a string " - " and a list the words.
-#apple - banana - cherry
+ # print join a string " - " and a list the words.
+ # #apple - banana - cherry

@@ -193,6 +193,17 @@ void debug_usage(void)
 * - Optional: print the offending line with a caret.
 * - Column can wait if you do not have it yet.
 
+void diagnose(int severity, int area, int line, int col, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stdout, fmt, ap);   / * or stderr, but pick one * /
+    va_end(ap);
+    fflush(stdout);
+}
+setvbuf(stdout, NULL, _IONBF, 0);
+setvbuf(stderr, NULL, _IONBF, 0);
+
 */
 
 /* enum severity { DIAG_FATAL, DIAG_DEBUG, DIAG_WARNING, DIAG_ERROR };*/

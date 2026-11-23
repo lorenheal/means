@@ -32,6 +32,7 @@
 "to"               { RETURN( TO); }
 "means"            { RETURN( MEANS); }
 "constant"         { RETURN( CONSTANT); }
+"empty"            { RETURN( EMPTY); }
 "stays" 	       { RETURN( STAYS); }
 "do"               { RETURN( DO); }
 "done"             { RETURN( DONE); }
