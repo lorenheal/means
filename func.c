@@ -8,7 +8,7 @@
 struct expr;
 
 struct func *
-func_new(void)
+func_new(void) /* def */
 	{
 	struct func *ret = calloc(1, sizeof *ret);
 	if (!ret)
@@ -20,7 +20,7 @@ func_new(void)
 	}
 
 struct func *
-func_create(const char *name, struct scope *lexical)
+func_create(const char *name, struct scope *lexical) /* def */
 	{
 	struct func *f = func_new();
 	f->name = strdup(name);
@@ -29,7 +29,7 @@ func_create(const char *name, struct scope *lexical)
 	}
 
 struct func *
-func_create_builtin(const char *name, struct scope *lexical,
+func_create_builtin(const char *name, struct scope *lexical, /* def */
                     struct value (*fn)(struct scope *), int is_rest)
 	{
 	struct func *f = func_create(name, lexical);
@@ -39,19 +39,19 @@ func_create_builtin(const char *name, struct scope *lexical,
 	}
 
 void
-func_set_body(struct func *f, struct stmt *body)
+func_set_body(struct func *f, struct stmt *body)/* def */
 	{
 	f->body = body;
 	}
 
 void
-func_set_builtin(struct func *f, struct value (*fn)(struct scope *))
+func_set_builtin(struct func *f, struct value (*fn)(struct scope *))/* def */
 	{
 	f->builtin = fn;
 	}
 
 int
-func_param_is_rest(const struct func *f, int i)
+func_param_is_rest(const struct func *f, int i) /* def */
 	{
 	if (!f || i < 0 || i >= f->param_count)
 		return 0; /* WARN: out-of-range index */
@@ -59,20 +59,20 @@ func_param_is_rest(const struct func *f, int i)
 	}
 
 void
-func_set_is_rest(struct func *f, int is_rest)
+func_set_is_rest(struct func *f, int is_rest) /* def */
 	{
 	if (f)
 		f->is_rest = is_rest;
 	}
 
 struct func *
-func_next_overload(const struct func *f)
+func_next_overload(const struct func *f) /* def */
 	{
 	return f ? f->next_overload : NULL;
 	}
 
 struct func *
-func_define(char *name, struct param *params, struct stmt *body,
+func_define(char *name, struct param *params, struct stmt *body, /* def */
             struct scope *scope)
 	{
 	struct func *f = func_new();
@@ -91,7 +91,7 @@ func_define(char *name, struct param *params, struct stmt *body,
 	return f;
 	}
 
-void func_add_param(struct func *f, const char *name, struct value init)
+void func_add_param(struct func *f, const char *name, struct value init) /* def */
 	{
 	if (!f || !name)
 		return; /* ERROR: early return — diagnose null */
@@ -100,13 +100,13 @@ void func_add_param(struct func *f, const char *name, struct value init)
 	}
 
 int
-func_param_count(const struct func *f)
+func_param_count(const struct func *f) /* def */
 	{
 	return f ? f->param_count : 0;
 	}
 
 const char *
-func_param_name(const struct func *f, int i)
+func_param_name(const struct func *f, int i) /* def */
 	{
 	const struct param *p;
 	int n;
@@ -119,7 +119,7 @@ func_param_name(const struct func *f, int i)
 	}
 
 int
-func_param_vtype(const struct func *f, int i)
+func_param_vtype(const struct func *f, int i) /* def */
 	{
 	const struct param *p;
 	int n;
@@ -132,7 +132,7 @@ func_param_vtype(const struct func *f, int i)
 	}
 
 void
-func_free(struct func *f)
+func_free(struct func *f) /* def */
 	{
 	if (!f)
 		return;
@@ -144,31 +144,31 @@ func_free(struct func *f)
 	}
 
 int
-func_is_rest(const struct func *f)
+func_is_rest(const struct func *f) /* def */
 	{
 	return f && f->is_rest;
 	}
 
 const char *
-func_name(const struct func *f)
+func_name(const struct func *f) /* def */
 	{
 	return f ? f->name : NULL;
 	}
 
 struct scope *
-func_lexical_scope(const struct func *f)
+func_lexical_scope(const struct func *f) /* def */
 	{
 	return f ? f->lexical_scope : NULL;
 	}
 
 struct stmt *
-func_body(const struct func *f)
+func_body(const struct func *f) /* def */
 	{
 	return f ? f->body : NULL;
 	}
 
 struct value
-(*func_builtin(const struct func *f))(struct scope *)
+(*func_builtin(const struct func *f))(struct scope *) /* def */
 	{
 	return f ? f->builtin : NULL;
 	}

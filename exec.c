@@ -12,7 +12,7 @@
 #include <stdbool.h>
 
 static struct value
-build_arguments_list(struct argnode *args, struct scope *scope)
+build_arguments_list(struct argnode *args, struct scope *scope) /* def */
 	{
 	struct list *lst;
 	struct argnode *a;
@@ -29,7 +29,7 @@ build_arguments_list(struct argnode *args, struct scope *scope)
 
 /* Temporary array only for overload matching; free the array, not the values. */
 static struct value *
-eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out)
+eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out) /* def */
 	{
 	struct value *argv;
 	int n, i;
@@ -56,7 +56,7 @@ eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out)
 	}
 
 static struct func *
-find_matching_func(const char *name, struct value *argv, int argc,
+find_matching_func(const char *name, struct value *argv, int argc, /* def */
                    struct scope *scope)
 	{
 	struct func *f = sym_find_function(name, scope);
@@ -68,48 +68,54 @@ find_matching_func(const char *name, struct value *argv, int argc,
 		}
 	return NULL;
 	}
+
 struct value
-call_func(const char *name, struct argnode *args, struct scope *scope)
+call_func(const char *name, struct argnode *args, struct scope *scope) /* def */
 	{
 	int argc = 0;
 	struct value *argv = eval_args_for_match(args, scope, &argc);
-	struct func *f;
-	struct value arguments;
-	struct scope *local;
-	struct value result;
+	struct func *f = NULL;
+	match_result mr = MATCH_TYPE_MISMATCH;
+	struct value arguments = Value_Empty();
+	struct scope *local = NULL;
+	struct value result = Value_Empty();
 	int i;
-
-	f = find_matching_func(name, argv, argc, scope);
-	if (!f)
+	struct func *cand;
+	struct func *last = NULL;
+	for (cand = sym_find_function(name, scope); cand; cand = func_next_overload(cand))
 		{
-		report_match_failure(name, MATCH_TYPE_MISMATCH, NULL, argc);
-		/* or keep the last match_result from the search if you want the precise reason */
-		for (i = 0; i < argc; i++)
-			Value_Free(argv[i]);
-		free(argv);
-		return Value_Empty();
+		last = cand;
+		mr = params_match(cand, argv, argc);
+		if (mr == MATCH_OK)
+			{
+			f = cand;
+			break;
+			}
 		}
-
-	/* build the arguments list from the already-evaluated values */
-	arguments = Value_List(list_new());
-	for (i = 0; i < argc; i++)
-		list_append(argv[i], Value_AsList(arguments));
-
-	local = scope_new(func_name(f), func_lexical_scope(f));
-	sym_set_value("arguments", arguments, local);
-	if (func_param_count(f) > 0)
-		bind_fixed_params(f, arguments, local);
-
-	if (func_builtin(f))
-		result = func_builtin(f)(local);
+	if (f)
+		{
+		if (argc > 0)
+			{
+			arguments = Value_List(list_new());
+			for (i = 0; i < argc; i++)
+				list_append(argv[i], Value_AsList(arguments));
+			}
+		local = scope_new(func_name(f), func_lexical_scope(f));
+		sym_set_value("arguments", arguments, local);
+		if (func_param_count(f) > 0)
+			bind_fixed_params(f, arguments, local);
+		if (func_builtin(f))
+			result = func_builtin(f)(local);
+		else
+			result = exec_stmts(func_body(f), local);
+		Value_Free(arguments);
+		scope_free(local);
+		}
 	else
-		result = exec_stmts(func_body(f), local);
-
+		report_match_failure(name, mr, last, argc);
 	for (i = 0; i < argc; i++)
 		Value_Free(argv[i]);
 	free(argv);
-	Value_Free(arguments);
-	scope_free(local);
 	return result;
 	}
 
@@ -118,7 +124,7 @@ call_func(const char *name, struct argnode *args, struct scope *scope)
 * else T_NUMBER if both are numbers,
 * else T_UNTYPED
 */
-enum vtype result_type(struct value a, struct value b)
+enum vtype result_type(struct value a, struct value b) /* def */
 	{
 	int ret = T_UNTYPED;
 	if ((Value_Type(a) == T_DECIMAL) || (Value_Type(a) == T_DECIMAL))
@@ -128,14 +134,14 @@ enum vtype result_type(struct value a, struct value b)
 	return ret;
 	}
 /* promote a number value to double; caller has already checked it is numeric */
-static double as_double(struct value v)
+static double as_double(struct value v) /* def */
 	{
 	return (Value_Type(v) == T_DECIMAL) ? Value_AsDecimal(v)
 	       : (double)Value_AsNumber(v);
 	}
 
 struct value
-eval_expr(struct expr *e, struct scope *scope)
+eval_expr(struct expr *e, struct scope *scope) /* def */
 	{
 	struct value z = Value_Empty();
 	if (!e)
@@ -274,7 +280,7 @@ eval_expr(struct expr *e, struct scope *scope)
 	}
 
 struct value
-exec_stmts(struct stmt *s, struct scope *scope)
+exec_stmts(struct stmt *s, struct scope *scope) /* def */
 	{
 	struct value result = Value_Empty();
 	while (s)

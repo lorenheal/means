@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct param *param_new(const char *name, struct value init)
+struct param *param_new(const char *name, struct value init) /* def */
 	{
 	struct param *p = calloc(1, sizeof *p);
 	if (!p)
@@ -24,7 +24,7 @@ struct param *param_new(const char *name, struct value init)
 	return p;
 	}
 
-struct param *param_append(struct param *list, const char *name, struct value init)
+struct param *param_append(struct param *list, const char *name, struct value init) /* def */
 	{
 	struct param *p = param_new(name, init);
 	if (!list)
@@ -36,7 +36,7 @@ struct param *param_append(struct param *list, const char *name, struct value in
 	return list;
 	}
 
-struct param *param_from_decl(const char *name, struct expr *e, int init, struct scope *scope) /* decl */
+struct param *param_from_decl(const char *name, struct expr *e, int init, struct scope *scope) /* def */
 	{
 
 	struct vtypename vtypenames[] =
@@ -68,7 +68,7 @@ struct param *param_from_decl(const char *name, struct expr *e, int init, struct
 	return p;
 	}
 
-struct param *param_append_from_decl(struct param *list,  const char *name, /* decl */
+struct param *param_append_from_decl(struct param *list,  const char *name, /* def */
                                      struct expr *e, int init, struct scope *scope)
 	{
 	struct param *p = param_from_decl(name, e, init, scope);
@@ -84,7 +84,7 @@ struct param *param_append_from_decl(struct param *list,  const char *name, /* d
 	}
 
 void
-param_free(struct param *list) /* decl */
+param_free(struct param *list) /* def */
 	{
 	while (list)
 		{
@@ -96,13 +96,13 @@ param_free(struct param *list) /* decl */
 	}
 
 struct argnode *
-argnode_next(struct argnode *a) /* decl */
+argnode_next(struct argnode *a) /* def */
 	{
 	return((a)?(a->next):(NULL));
 	}
 
 struct argnode *
-argnode_new(struct expr *e) /* decl */
+argnode_new(struct expr *e) /* def */
 	{
 	struct argnode *a = calloc(1, sizeof *a);
 	if (!a)
@@ -115,13 +115,13 @@ argnode_new(struct expr *e) /* decl */
 	}
 
 struct argnode *
-arglist_new(struct expr *e) /* decl */
+arglist_new(struct expr *e) /* def */
 	{
 	return argnode_new(e);
 	}
 
 struct argnode *
-arglist_append(struct expr *e, struct argnode *list) /* decl */
+arglist_append(struct expr *e, struct argnode *list) /* def */
 	{
 	struct argnode *n = argnode_new(e);
 	if (!list)
@@ -134,7 +134,7 @@ arglist_append(struct expr *e, struct argnode *list) /* decl */
 	}
 
 void
-arglist_free(struct argnode *list) /* decl */
+arglist_free(struct argnode *list) /* def */
 	{
 	while (list)
 		{
@@ -145,49 +145,40 @@ arglist_free(struct argnode *list) /* decl */
 	}
 
 match_result
-params_match(const struct func *f, struct value *argv, int argc) /* decl */
+params_match(const struct func *f, struct value *argv, int argc) /* def */
 	{
 	match_result result = MATCH_OK;
 	const struct param *p;
-	int i, fixed;
-
+	int i, fixed, required;
 	if (!f)
 		result = MATCH_NULL_FUNC;
 	else
 		{
 		fixed = func_param_count(f);
-
-		if (!(f->is_rest && fixed == 0))   /* pure-rest zero-arg is always OK */
+		required = 0;
+		for (p = f->params; p; p = p->next)
+			if (!Value_IsInit(p->init))
+				required++;
+		if (!(f->is_rest && fixed == 0))
 			{
-			if (argc < fixed)
+			if (argc < required)
 				result = MATCH_TOO_FEW;
 			else if (argc > fixed && !func_is_rest(f))
 				result = MATCH_TOO_MANY;
 			else
 				{
 				for (p = f->params, i = 0;
-				        p && i < fixed && result == MATCH_OK;
+				        p && i < argc && result == MATCH_OK;
 				        p = p->next, i++)
 					{
 					enum vtype want = p->vtype;
-					struct value got;
-
-					if (want == T_UNTYPED || want == T_ANY)
-						continue;
-
-					got = argv[i];
-					if (want != T_LIST
+					struct value got = argv[i];
+					if (want != T_UNTYPED && want != T_ANY && want != T_LIST
 					        && Value_IsList(got)
 					        && list_length(Value_AsList(got)) == 1)
 						got = list_first(Value_AsList(got));
-
-					if (want != Value_Type(got))
-						{
-						diagnose(DIAG_DEBUG, DBG_PARAMS, 0, 0,
-						         "type mismatch want %d got %d",
-						         want, Value_Type(got));
+					if (want != T_UNTYPED && want != T_ANY && want != Value_Type(got))
 						result = MATCH_TYPE_MISMATCH;
-						}
 					}
 				}
 			}
@@ -196,7 +187,7 @@ params_match(const struct func *f, struct value *argv, int argc) /* decl */
 	}
 
 void
-report_match_failure(const char *name, match_result mr, /* decl */
+report_match_failure(const char *name, match_result mr, /* def */
                      const struct func *f, int argc)
 	{
 	int need = f ? func_param_count(f) : 0;
@@ -226,7 +217,7 @@ report_match_failure(const char *name, match_result mr, /* decl */
 	}
 
 void
-bind_fixed_params(struct func *f, struct value arguments, struct scope *scope) /* decl */
+bind_fixed_params(struct func *f, struct value arguments, struct scope *scope) /* def */
 	{
 	struct list *lst = NULL;
 	struct param *p;
@@ -274,7 +265,7 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope) /
 	}
 
 void
-params_free(struct param *params, int count) /* decl */
+params_free(struct param *params, int count) /* def */
 	{
 	int i;
 	/**/

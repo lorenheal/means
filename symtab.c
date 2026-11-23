@@ -7,7 +7,7 @@
 struct scope *global_scope = NULL;
 
 struct scope *
-scope_new(const char *name, struct scope *outer)
+scope_new(const char *name, struct scope *outer) /* def */
 	{
 	struct scope *s = calloc(1, sizeof *s);
 	if (!s)
@@ -21,7 +21,7 @@ scope_new(const char *name, struct scope *outer)
 	}
 
 void
-scope_free(struct scope *s)
+scope_free(struct scope *s) /* def */
 	{
 	if (!s)
 		return;
@@ -30,7 +30,7 @@ scope_free(struct scope *s)
 	free(s);
 	}
 
-static struct sym *sym_new(void)
+static struct sym *sym_new(void) /* def */
 	{
 	struct sym *sym = calloc(1, sizeof *sym);
 	if (!sym)
@@ -43,7 +43,7 @@ static struct sym *sym_new(void)
 
 
 void
-sym_define_function(const char *name, struct func *f, struct scope *scope)
+sym_define_function(const char *name, struct func *f, struct scope *scope) /* def */
 	{
 	diagnose(DIAG_DEBUG, (DBG_SYMTAB & DBG_VERBOSE), 0, 0, "sym_define_function(%s, %p, %p)",
 	         name ? name : "(null)", (void *)f, (void *)scope);
@@ -71,7 +71,7 @@ sym_define_function(const char *name, struct func *f, struct scope *scope)
 
 
 struct sym *
-sym_find_in_scope(const char *name, struct scope *scope)
+sym_find_in_scope(const char *name, struct scope *scope) /* def */
 	{
 	struct sym *s = NULL;
 	/**/
@@ -85,7 +85,7 @@ sym_find_in_scope(const char *name, struct scope *scope)
 	}
 
 struct sym *
-sym_find(const char *name, struct scope *scope)
+sym_find(const char *name, struct scope *scope) /* def */
 	{
 	struct sym *s = NULL;
 	/**/
@@ -101,7 +101,7 @@ sym_find(const char *name, struct scope *scope)
 	}
 
 struct func *
-sym_find_function(const char *name, struct scope *scope)
+sym_find_function(const char *name, struct scope *scope) /* def */
 	{
 	struct sym *s = sym_find(name, scope);
 	/**/
@@ -114,7 +114,7 @@ sym_find_function(const char *name, struct scope *scope)
 	}
 
 void
-sym_set_value(const char *name, struct value v, struct scope *scope)
+sym_set_value(const char *name, struct value v, struct scope *scope) /* def */
 	{
 	struct sym *s = sym_find_in_scope(name, scope);
 	if(name && strcmp("x", name) == 0)
@@ -134,7 +134,7 @@ sym_set_value(const char *name, struct value v, struct scope *scope)
 	s->vtype = v.vtype;
 	}
 
-struct value sym_value(struct sym *s)
+struct value sym_value(struct sym *s) /* def */
 	{
 	struct value ret = Value_Empty();
 	if(s != NULL)
@@ -144,7 +144,7 @@ struct value sym_value(struct sym *s)
 	return ret;
 	}
 
-struct value sym_get_value(char *name, struct scope *scope)
+struct value sym_get_value(char *name, struct scope *scope) /* def */
 	{
 	struct value ret = Value_Empty();
 	struct sym *s = NULL;

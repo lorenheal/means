@@ -6,26 +6,26 @@
 #include "mstring.h"
 
 
-struct value Value_Empty(void) 
+struct value Value_Empty(void) /* def */
 	{
-	struct value ret = { .vtype = T_EMPTY };
+	struct value ret = { .vtype = T_EMPTY, .initialized = 1 };
 	return ret;
 	}
 
 int
-Value_IsInit(struct value v)
+Value_IsInit(struct value v) /* def */
 {
     return v.initialized;
 }
 
 struct value
-Value_Init(struct value v, int init)
+Value_Init(struct value v, int init) /* def */
 {
     v.initialized = init;
     return v;
 }
 
-struct value Value_Copy(struct value v) /* returns owned copy */
+struct value Value_Copy(struct value v) /* def *//* returns owned copy */
 	{
 	if (v.vtype == T_WORD && v.mval)
 		v.mval->refcount++;
@@ -34,7 +34,7 @@ struct value Value_Copy(struct value v) /* returns owned copy */
 	return v;
 	}
 
-void Value_Free(struct value v)
+void Value_Free(struct value v) /* def */
 	{
 	/* DEBUG: double-free risk if caller also frees */
 	if ((v.vtype == T_WORD) && v.mval)
@@ -43,7 +43,7 @@ void Value_Free(struct value v)
 		list_decref(v.lval);
 	}
 
-int Value_Print(const struct value *v)
+int Value_Print(const struct value *v) /* def */
 	{
 	int printed = 0;
 	if(v)
@@ -77,59 +77,59 @@ int Value_Print(const struct value *v)
 	}
 
 long
-Value_AsNumber(struct value v)
+Value_AsNumber(struct value v) /* def */
 	{
 	return (v.vtype == T_NUMBER) ? v.ival : 0;
 	}
 
 double
-Value_AsDecimal(struct value v)
+Value_AsDecimal(struct value v) /* def */
 	{
 	return (v.vtype == T_DECIMAL) ? v.fval : 0.0;
 	}
 
 struct mstring *
-Value_AsWord(struct value v)
+Value_AsWord(struct value v) /* def */
 	{
 	return (v.vtype == T_WORD) ? v.mval : NULL;
 	}
 
 struct func *
-Value_AsFunc(struct value v)
+Value_AsFunc(struct value v) /* def */
 	{
 	return (v.vtype == T_FUNC) ? v.fnval : NULL;
 	}
 
 struct list *
-Value_AsList(struct value v)
+Value_AsList(struct value v) /* def */
 	{
 	return (v.vtype == T_LIST) ? v.lval : NULL;
 	}
 
 const char *
-Value_AsCStr(struct value v)
+Value_AsCStr(struct value v) /* def */
 	{
 	struct mstring *m = Value_AsWord(v);
 	return ((m) ? (mstring_cstr(m)) : (""));
 	}
 
-int Value_IsEmpty(struct value v)
+int Value_IsEmpty(struct value v) /* def */
 	{
 	return (T_EMPTY == v.vtype);
 	}
 
-enum vtype   Value_Type(struct value v)
+enum vtype   Value_Type(struct value v) /* def */
 	{
 	return v.vtype;   
 	}
 
-struct value Value_Bool(int b)
+struct value Value_Bool(int b) /* def */
 	{
 	struct value v = { .vtype = T_BOOL, .ival = b };
 	return v;
 	}
 
-struct value Value_Func(struct func *f)
+struct value Value_Func(struct func *f) /* def */
 	{
 	struct value v = Value_Empty();
 	if(f)
@@ -140,13 +140,13 @@ struct value Value_Func(struct func *f)
 	return v;
 	}
 
-struct value Value_Decimal(double x)
+struct value Value_Decimal(double x) /* def */
 	{
 	struct value v = { .vtype = T_DECIMAL, .fval = x };
 	return v;
 	}
 
-struct value Value_Number(long x)
+struct value Value_Number(long x) /* def */
 	{
 	struct value v = { .vtype = T_NUMBER, .ival = x };
 	return v;
@@ -163,7 +163,7 @@ struct value Value_Word(const char *s)
 	return v;
 	}
 
-struct value Value_List(struct list *lst)
+struct value Value_List(struct list *lst) /* def */
 	{
 	struct value v = Value_Empty();
 	if (lst)
@@ -175,29 +175,29 @@ struct value Value_List(struct list *lst)
 	return v;
 	}
 
-int Value_IsNumber(const struct value v)
+int Value_IsNumber(const struct value v) /* def */
 	{
 	return (Value_Type(v) == T_NUMBER);
 	}
 
-int Value_IsDecimal (const struct value v)
+int Value_IsDecimal (const struct value v) /* def */
 	{
 	return (Value_Type(v) == T_DECIMAL);
 	}
 
-int Value_IsWord(const struct value v)
+int Value_IsWord(const struct value v) /* def */
 	{
 	return (Value_Type(v) == T_WORD);
 	}
 
-int Value_IsList(const struct value v)
+int Value_IsList(const struct value v) /* def */
 	{
 	return (Value_Type(v) == T_LIST);
 	}
 
 
 int
-Value_IsTrue(struct value v)
+Value_IsTrue(struct value v) /* def */
 	{
 	switch (Value_Type(v))
 		{
@@ -216,13 +216,13 @@ Value_IsTrue(struct value v)
 		}
 	}
 
-/* int Value_IsConstant(const struct value *v) { return v && v->is_const; } */
+/* int Value_IsConstant(const struct value *v) { return v && v->is_const; } */ /* def */
 
-/* void value_set_constant(struct value *v)
+/* void value_set_constant(struct value *v) */ /* def */ /*
 	{ if (v) v->is_const = 1; }
 */
 
-const char *Value_AsCstr(struct value *v)
+const char *Value_AsCstr(struct value *v) /* def */
 	{
 	if (v)
 		{
@@ -231,7 +231,7 @@ const char *Value_AsCstr(struct value *v)
 	return(NULL);
 	}
 
-int Value_Equal(struct value a, struct value b) 
+int Value_Equal(struct value a, struct value b) /* def */
 	{
 	if (a.vtype != b.vtype) return 0;
 	switch (a.vtype)
