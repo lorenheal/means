@@ -36,7 +36,7 @@ struct param *param_append(struct param *list, const char *name, struct value in
 	return list;
 	}
 
-struct param *param_from_decl(const char *name, struct expr *e, int init, struct scope *scope)
+struct param *param_from_decl(const char *name, struct expr *e, int init, struct scope *scope) /* decl */
 	{
 
 	struct vtypename vtypenames[] =
@@ -68,7 +68,7 @@ struct param *param_from_decl(const char *name, struct expr *e, int init, struct
 	return p;
 	}
 
-struct param *param_append_from_decl(struct param *list,  const char *name,
+struct param *param_append_from_decl(struct param *list,  const char *name, /* decl */
                                      struct expr *e, int init, struct scope *scope)
 	{
 	struct param *p = param_from_decl(name, e, init, scope);
@@ -84,7 +84,7 @@ struct param *param_append_from_decl(struct param *list,  const char *name,
 	}
 
 void
-param_free(struct param *list)
+param_free(struct param *list) /* decl */
 	{
 	while (list)
 		{
@@ -96,13 +96,13 @@ param_free(struct param *list)
 	}
 
 struct argnode *
-argnode_next(struct argnode *a)
+argnode_next(struct argnode *a) /* decl */
 	{
 	return((a)?(a->next):(NULL));
 	}
 
 struct argnode *
-argnode_new(struct expr *e)
+argnode_new(struct expr *e) /* decl */
 	{
 	struct argnode *a = calloc(1, sizeof *a);
 	if (!a)
@@ -115,13 +115,13 @@ argnode_new(struct expr *e)
 	}
 
 struct argnode *
-arglist_new(struct expr *e)
+arglist_new(struct expr *e) /* decl */
 	{
 	return argnode_new(e);
 	}
 
 struct argnode *
-arglist_append(struct expr *e, struct argnode *list)
+arglist_append(struct expr *e, struct argnode *list) /* decl */
 	{
 	struct argnode *n = argnode_new(e);
 	if (!list)
@@ -134,7 +134,7 @@ arglist_append(struct expr *e, struct argnode *list)
 	}
 
 void
-arglist_free(struct argnode *list)
+arglist_free(struct argnode *list) /* decl */
 	{
 	while (list)
 		{
@@ -145,7 +145,7 @@ arglist_free(struct argnode *list)
 	}
 
 match_result
-params_match(const struct func *f, struct value *argv, int argc)
+params_match(const struct func *f, struct value *argv, int argc) /* decl */
 	{
 	match_result result = MATCH_OK;
 	const struct param *p;
@@ -196,7 +196,7 @@ params_match(const struct func *f, struct value *argv, int argc)
 	}
 
 void
-report_match_failure(const char *name, match_result mr,
+report_match_failure(const char *name, match_result mr, /* decl */
                      const struct func *f, int argc)
 	{
 	int need = f ? func_param_count(f) : 0;
@@ -226,7 +226,7 @@ report_match_failure(const char *name, match_result mr,
 	}
 
 void
-bind_fixed_params(struct func *f, struct value arguments, struct scope *scope)
+bind_fixed_params(struct func *f, struct value arguments, struct scope *scope) /* decl */
 	{
 	struct list *lst = NULL;
 	struct param *p;
@@ -274,7 +274,7 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope)
 	}
 
 void
-params_free(struct param *params, int count)
+params_free(struct param *params, int count) /* decl */
 	{
 	int i;
 	/**/

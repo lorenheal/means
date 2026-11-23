@@ -103,6 +103,17 @@ stmt_call(char *name, struct argnode *args)
 	return s;
 	}
 
+struct argnode *pack_if_multi(struct argnode *args)
+	{
+	int n = 0;
+	for (struct argnode *a = args; a; a = argnode_next(a))
+		n++;
+	if (n <= 1)
+		return args;                 /* 0 or 1: leave unchanged */
+	struct expr *lst = ev_list(args);
+	return arglist_new(lst);
+	}
+
 struct expr *
 ev_binop(int op, struct expr *left, struct expr *right)
 	{

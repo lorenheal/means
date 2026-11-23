@@ -63,6 +63,8 @@ struct stmt *stmt_if(struct expr *cond, struct stmt *thenb, struct stmt *elseb);
 struct stmt *stmt_while(struct expr *cond, struct stmt *body);
 struct stmt *stmt_call(char *name, struct argnode *args);
 
+struct argnode *pack_if_multi(struct argnode *args);
+
 struct expr *ev_binop(int op, struct expr *left, struct expr *right);
 struct expr *ev_number(int ival);
 struct expr *ev_decimal(float fval);

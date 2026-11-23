@@ -1,4 +1,4 @@
-TO show the argues are empty  MEANS TO
+TO show the argues are like empty  MEANS TO
 DO
 	print "[" and the argues and "]" .
     print the argues.
