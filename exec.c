@@ -48,8 +48,8 @@ eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out) /*
 	for (a = args; a; a = argnode_next(a), i++)
 		{
 		argv[i] = eval_expr(a->expr, scope);
-		diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0,
-		         "arg etype=%d vtype=%d", a->expr->etype, argv[i].vtype);
+		diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "eafm: arg[%d] etype=%d vtype=%d lval=%p",
+             i, a->expr->etype, argv[i].vtype, (argv[i].vtype == T_LIST) ? (void *)argv[i].lval : NULL);
 		}
 	*argc_out = n;
 	return argv;

@@ -5,14 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct list *list_new(void)
+struct list *list_new(void) /* def */
 	{
 	struct list *lst = calloc(1, sizeof *lst);
 	lst->refcount = 1;
 	return lst;   /* head = tail = NULL, length = 0 */
 	}
 
-void list_free(struct list *lst)
+void list_free(struct list *lst) /* def */
 	{
 	if (!lst) return;
 	struct listnode *n = lst->head;
@@ -26,7 +26,7 @@ void list_free(struct list *lst)
 	free(lst);
 	}
 
-struct listnode *listnode_new(struct value v)
+struct listnode *listnode_new(struct value v) /* def */
 	{
 	struct listnode *ret = calloc(1, sizeof(*ret));
 	ret->val = Value_Copy(v);
@@ -34,17 +34,17 @@ struct listnode *listnode_new(struct value v)
 	return (ret);
 	}
 
-int list_isempty(const struct list *lst)
+int list_isempty(const struct list *lst) /* def */
 	{
 	return !lst || lst->length == 0;
 	}
 
-int list_length(const struct list *lst)
+int list_length(const struct list *lst) /* def */
 	{
 	return lst ? lst->length : 0;
 	}
 
-struct value list_first(const struct list *lst)
+struct value list_first(const struct list *lst) /* def */
 	{
 	struct value ret = Value_Empty();
 	if (! list_isempty(lst))
@@ -52,14 +52,14 @@ struct value list_first(const struct list *lst)
 	return(ret);
 	}
 
-struct value list_last(const struct list *lst)
+struct value list_last(const struct list *lst) /* def */
 	{
 	struct value z = Value_Empty();
 	if (list_isempty(lst)) return z;
 	return Value_Copy(lst->tail->val);
 	}
 
-struct list *list_append(struct value v, struct list *lst)
+struct list *list_append(struct value v, struct list *lst) /* def */
 	{
 	struct list *ret = lst;
 	if (lst)
@@ -80,7 +80,7 @@ struct list *list_append(struct value v, struct list *lst)
 	return(ret);
 	}
 
-struct list *list_insert(struct value v, struct list *lst)
+struct list *list_insert(struct value v, struct list *lst) /* def */
 	{
 	/* just returns the lst pointer */
 	if(lst)
@@ -97,13 +97,13 @@ struct list *list_insert(struct value v, struct list *lst)
 	return(lst);
 	}
 
-struct list *list_push(struct value v, struct list *lst)
+struct list *list_push(struct value v, struct list *lst) /* def */
 	{
 	return(list_insert(v, lst));
 	}
 
 /* returns a new copy of the rest of the list */
-struct list *list_rest(const struct list *lst)
+struct list *list_rest(const struct list *lst) /* def */
 	{
 	struct list *r = list_new();
 	if (!lst || !lst->head || !lst->head->next)
@@ -113,7 +113,7 @@ struct list *list_rest(const struct list *lst)
 	return r;
 	}
 
-struct value list_pop(struct list *list)
+struct value list_pop(struct list *list) /* def */
 	{
 	struct value ret = Value_Empty();
 	if(! list_isempty(list))
@@ -130,7 +130,7 @@ struct value list_pop(struct list *list)
 	return(ret);
 	}
 
-struct list *list_split(struct list *lst)
+struct list *list_split(struct list *lst) /* def */
 	{
 	struct list *rest = list_new();
 	if (!lst || !lst->head || !lst->head->next)
@@ -150,7 +150,7 @@ struct list *list_split(struct list *lst)
 
 
 int
-list_find(struct value v, const struct list *lst)
+list_find(struct value v, const struct list *lst) /* def */
 	{
 	int ret = MEANS_NOT_FOUND;
 	int i = 0;
@@ -166,7 +166,7 @@ list_find(struct value v, const struct list *lst)
 	return ret;
 	}
 
-struct list *list_copy(const struct list *lst)
+struct list *list_copy(const struct list *lst) /* def */
 	{
 	struct list *c = list_new();
 	if (!lst) return c;
@@ -174,20 +174,20 @@ struct list *list_copy(const struct list *lst)
 		list_append(n->val, c);
 	return c;
 	}
-struct listnode *list_head(const struct list *lst)
+struct listnode *list_head(const struct list *lst) /* def */
 	{
 	return lst ? lst->head : NULL;
 	}
-struct listnode *list_tail(const struct list *lst)
+struct listnode *list_tail(const struct list *lst) /* def */
 	{
 	return lst ? lst->tail : NULL;
 	}
-int list_get_refcount(const struct list *lst)
+int list_get_refcount(const struct list *lst) /* def */
 	{
 	return lst ? lst->refcount : 0;
 	}
 
-int list_incref(struct list *lst)
+int list_incref(struct list *lst) /* def */
 	{
 	int ret = 0;
 	if (lst)
@@ -198,7 +198,7 @@ int list_incref(struct list *lst)
 	return(ret);
 	}
 
-int list_decref(struct list *lst)
+int list_decref(struct list *lst) /* def */
 	{
 	int ret = 0;
 	if (lst)
@@ -209,28 +209,28 @@ int list_decref(struct list *lst)
 	return(ret);
 	}
 
-struct value listnode_val(const struct listnode *n)
+struct value listnode_val(const struct listnode *n) /* def */
 	{
 	return n ? n->val : Value_Empty();
 	}
 
-struct listnode *list_next(const struct listnode *n)
+struct listnode *list_next(const struct listnode *n) /* def */
 	{
 	return n ? n->next : NULL;
 	}
 
-struct listnode *listnode_next(const struct listnode *n)
+struct listnode *listnode_next(const struct listnode *n) /* def */
 	{
 	return n ? n->next : NULL;
 	}
 
-struct listnode *list_begin(const struct list *lst)
+struct listnode *list_begin(const struct list *lst) /* def */
 	{
 	return lst ? lst->head : NULL;
 	}
 
 const struct value *
-listnode_value(const struct listnode *n)
+listnode_value(const struct listnode *n) /* def */
 	{
 	if(n)
 		return(&n->val);
@@ -251,7 +251,7 @@ int list_equal(const struct list *a, const struct list *b) {
     return 1;
 }
 
-int print_list(const struct list *lst)
+int print_list(const struct list *lst) /* def */
 	{
 	struct listnode *n;
 	int printed = 0;

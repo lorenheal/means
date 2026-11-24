@@ -416,13 +416,18 @@ static struct value builtin_insert(struct scope *scope)
 	/**/
 	if (Value_Type(cont) == T_LIST)
 		{
+		struct list *lst = Value_AsList(cont);
+        diagnose(DIAG_DEBUG, DBG_LIST, 0, 0,
+                 "insert: cont type=%d lval=%p ref=%d",
+                 Value_Type(cont), (void *)lst,
+                 lst ? list_get_refcount(lst) : -1);
 		list_insert(small, Value_AsList(cont));
 		ret = Value_Copy(cont);
 		}
 	else if (Value_Type(cont) == T_WORD && Value_Type(small) == T_WORD)
 		{
 		const char *n = mstring_cstr(Value_AsWord(small));
-		mstring_append(n, Value_AsWord(cont));
+		mstring_insert(n, Value_AsWord(cont));
 		ret = cont;
 		}
 	return ret;
@@ -479,7 +484,7 @@ static struct value builtin_roll(struct scope *scope)
         struct sym *s = sym_find_in_scope(name, scope);
         if (!s)
             break;
-        list_append(lst, s->val);
+        list_append(s->val, lst);
         }
     return Value_List(lst);
     }

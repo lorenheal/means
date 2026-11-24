@@ -46,16 +46,15 @@ struct stmt *cur_head;
 %type <sptr>   statement assignment return_stmt if_stmt while_stmt call_stmt
 %type <stmtl>  statement_list block opt_statement_list
 %type <argl>   arglist expr_list
-%type <pinfo>  paramlist
+%type <pinfo>  paramlist param
 %type <fptr>   funcdef
 %type <ival>   const_or_not
 
 %nonassoc THEN
 %nonassoc ELSE
-%left LOGICAL_OR
-%left LOGICAL_AND EXCLUSIVE_OR
-%left EQUAL_TO UNEQUAL_TO
-%left GREATER_THAN LESS_THAN AT_LEAST AT_MOST
+%left AND
+%left LOGICAL_OR LOGICAL_AND EXCLUSIVE_OR
+%left EQUAL_TO UNEQUAL_TO GREATER_THAN LESS_THAN AT_LEAST AT_MOST
 %left PLUS MINUS
 %left TIMES OVER
 
@@ -139,21 +138,21 @@ funcdef
     ;
 
 arglist
-    : expr                                { $$ = arglist_new($1); }
-    | arglist AND expr                    { $$ = arglist_append($3, $1); }
+    : expr                 %prec AND   { $$ = arglist_new($1); }
+    | arglist AND expr     %prec AND   { $$ = arglist_append($3, $1); }
+    ;
+
+param
+    : THE IDENT IS primary 
+        { $$ = param_from_decl($2, $4, 1, defining_scope); free_expr($4); }
+    | THE IDENT IS LIKE primary 
+        { $$ = param_from_decl($2, $5, 0, defining_scope); free_expr($5); }
     ;
 
 paramlist
-    : /* empty */
-        { $$ = NULL; }
-    | THE IDENT IS expr
-        { $$ = param_from_decl($2, $4, 1, defining_scope); free_expr($4); }
-    | THE IDENT IS LIKE expr
-        { $$ = param_from_decl($2, $5, 0, defining_scope); free_expr($5); }
-    | paramlist AND THE IDENT IS expr
-        { $$ = param_append_from_decl($1, $4, $6, 1, defining_scope); free_expr($6); }
-    | paramlist AND THE IDENT IS LIKE expr
-        { $$ = param_append_from_decl($1, $4, $7, 0, defining_scope); free_expr($7); }
+    : /* empty */           { $$ = NULL; }
+    | param                 { $$ = $1; }
+    | paramlist AND param   { $$ = param_link($1, $3); }
     ;
 
 call_stmt
@@ -179,6 +178,10 @@ expr
     | expr LOGICAL_OR expr                { $$ = ev_binop(LOGICAL_OR, $1, $3); }
     | expr EXCLUSIVE_OR expr              { $$ = ev_binop(EXCLUSIVE_OR, $1, $3); }
     | QUANTITY expr END QUANTITY          { $$ = $2; }
+    | IDENT arglist
+        { $$ = ev_call($1, pack_if_multi($2)); }
+    | IDENT
+        { $$ = ev_call($1, NULL); }
     ;
 
 primary
@@ -188,10 +191,6 @@ primary
     | BOOLVAL                             { $$ = ev_bool($1); }
     | EMPTY                               { $$ = ev_list(NULL); }
     | THE IDENT                           { $$ = ev_var($2); }
-    | IDENT arglist
-        { $$ = ev_call($1, pack_if_multi($2)); }
-    | IDENT
-        { $$ = ev_call($1, NULL); }
     ;
 
 %%

@@ -84,6 +84,18 @@ struct param *param_append_from_decl(struct param *list,  const char *name, /* d
 	return list;
 	}
 
+/* in params.c */
+struct param *param_link(struct param *list, struct param *p)
+{
+    if (!p) return list;
+    if (!list) return p;
+    struct param *tail = list;
+    while (tail->next)
+        tail = tail->next;
+    tail->next = p;
+    return list;
+}
+
 void
 param_free(struct param *list) /* def */
 	{
@@ -264,6 +276,14 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope) /
 			return;
 			}
 		sym_set_value(p->name, v, scope);
+		if (Value_Type(v) == T_LIST)
+{
+    struct list *bound = Value_AsList(v);
+    diagnose(DIAG_DEBUG, DBG_PARAMS, 0, 0,
+             "bound %s: type=%d lval=%p ref=%d",
+             p->name, Value_Type(v), (void *)bound,
+             bound ? list_get_refcount(bound) : -1);
+}
 		Value_Free(v);
 		}
 	}
