@@ -18,7 +18,7 @@ TARGET  = means
 
 aLll: $(TARGET)
 
-TESTS = test-mstring test-value test-print test-equal
+TESTS = test-mstring test-value test-print test-equal test-lists
 
 test: $(TESTS) 
 
@@ -32,6 +32,9 @@ test-print: test-print.o value.o meanslist.o mstring.o help.o
 	$(CC) -o $@ $^
 
 test-equal: test-equal.o value.o meanslist.o mstring.o help.o
+	$(CC) -o $@ $^
+
+test-lists: test-lists.o meanslist.o value.o mstring.o help.o
 	$(CC) -o $@ $^
 
 $(TARGET): $(OBJS)

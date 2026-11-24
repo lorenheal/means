@@ -31,28 +31,47 @@ build_arguments_list(struct argnode *args, struct scope *scope) /* def */
 static struct value *
 eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out) /* def */
 	{
-	struct value *argv;
-	int n, i;
+	struct value *ret;
+	int n = 0;
 	struct argnode *a;
 	/**/
-	n = 0;
+	if(!args)
+		{
+		args = arglist_new(ev_list(NULL));
+		}
+	else if(!argnode_next(args)) /* only one item */
+		{
+		/* single node: if its expression is not already a list, wrap it */
+		struct expr *e = args->expr;
+		if (e->etype != EV_LIST)
+			{
+			struct argnode *one = arglist_new(e);
+			args = one;
+			}
+		}
+		/* else it is already a list; keep it */
+		/* multi-node arglist (the AND form) is already correct */
 	for (a = args; a; a = argnode_next(a))
 		n++;
-	argv = calloc(n, sizeof *argv);
-	if (!argv)
+	ret = calloc(n, sizeof *ret);
+	if (!ret)
 		{
 		*argc_out = 0;
-		return NULL;
+		/* FIXME diagnose memory error; FIXME more: argnode_new()  */
 		}
-	i = 0;
-	for (a = args; a; a = argnode_next(a), i++)
+	else
 		{
-		argv[i] = eval_expr(a->expr, scope);
-		diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "eafm: arg[%d] etype=%d vtype=%d lval=%p",
-             i, a->expr->etype, argv[i].vtype, (argv[i].vtype == T_LIST) ? (void *)argv[i].lval : NULL);
+		int i = 0;
+		for (a = args; a; a = argnode_next(a), i++)
+			{
+			ret[i] = eval_expr(a->expr, scope);
+			diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "eafm: arg[%d] etype=%d vtype=%d lval=%p",
+			         i, a->expr->etype, ret[i].vtype,
+			         (ret[i].vtype == T_LIST) ? (void *)ret[i].lval : NULL);
+			}
 		}
 	*argc_out = n;
-	return argv;
+	return ret;
 	}
 
 static struct func *

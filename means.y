@@ -45,7 +45,7 @@ struct stmt *cur_head;
 %type <eptr>   expr primary
 %type <sptr>   statement assignment return_stmt if_stmt while_stmt call_stmt
 %type <stmtl>  statement_list block opt_statement_list
-%type <argl>   arglist expr_list
+%type <argl>   expr_list
 %type <pinfo>  paramlist param
 %type <fptr>   funcdef
 %type <ival>   const_or_not
@@ -107,7 +107,7 @@ expr_list
     ;
 
 return_stmt
-    : RETURN arglist DOT          { $$ = stmt_return($2); }
+    : RETURN expr_list DOT          { $$ = stmt_return($2); }
     ;
 
 if_stmt
@@ -137,10 +137,12 @@ funcdef
         }
     ;
 
+/*
 arglist
     : expr                 %prec AND   { $$ = arglist_new($1); }
     | arglist AND expr     %prec AND   { $$ = arglist_append($3, $1); }
     ;
+*/
 
 param
     : THE IDENT IS primary 
@@ -156,10 +158,10 @@ paramlist
     ;
 
 call_stmt
-    : IDENT
+    : IDENT DOT
         { $$ = stmt_call($1, NULL); }
-    | IDENT arglist
-        { $$ = stmt_call($1, pack_if_multi($2)); }
+    | IDENT expr DOT
+        { $$ = stmt_call($1, arglist_new($2)); }
     ;
 
 expr
@@ -178,10 +180,6 @@ expr
     | expr LOGICAL_OR expr                { $$ = ev_binop(LOGICAL_OR, $1, $3); }
     | expr EXCLUSIVE_OR expr              { $$ = ev_binop(EXCLUSIVE_OR, $1, $3); }
     | QUANTITY expr END QUANTITY          { $$ = $2; }
-    | IDENT arglist
-        { $$ = ev_call($1, pack_if_multi($2)); }
-    | IDENT
-        { $$ = ev_call($1, NULL); }
     ;
 
 primary

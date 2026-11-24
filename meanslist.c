@@ -263,3 +263,51 @@ int print_list(const struct list *lst) /* def */
 		}
 	return(printed);
 	}
+
+unsigned int list_OK(const struct list *l)
+	{
+	unsigned int bad = 0;
+	if (l == NULL)
+		bad |= LIST_BADNULL;
+	else
+		{
+		if (l->refcount <= 0)
+			bad |= LIST_BADREF;
+		if (l->length < 0)
+			bad |= LIST_BADUNK;
+		else if (l->length == 0)
+			{
+			if (l->head != NULL || l->tail != NULL)
+				bad |= LIST_BADSTALE;
+			}
+		else
+			{
+			if (l->head == NULL)
+				bad |= LIST_BADHEAD;
+			if (l->tail == NULL)
+				bad |= LIST_BADTAIL;
+			if (l->head != NULL && l->tail != NULL)
+				{
+				int count = 0;
+				struct listnode *p = l->head;
+				while (p != NULL)
+					{
+					count++;
+					if (count > l->length)
+						{
+						bad |= LIST_BADLONG;
+						break;
+						}
+					if (count == l->length && p != l->tail)
+						bad |= LIST_BADTAIL;
+					p = p->next;
+					}
+				if (!(bad & LIST_BADLONG) && count < l->length)
+					bad |= LIST_BADSHORT;
+				if (!(bad & (LIST_BADLONG | LIST_BADSHORT)) && l->tail && l->tail->next != NULL)
+					bad |= LIST_BADTAIL;  
+				}
+			}
+		}
+	return bad;
+	}

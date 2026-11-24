@@ -65,6 +65,8 @@ struct stmt *stmt_call(char *name, struct argnode *args);
 
 struct argnode *pack_if_multi(struct argnode *args);
 
+struct expr * expr_new(enum etype et);
+
 struct expr *ev_binop(int op, struct expr *left, struct expr *right);
 struct expr *ev_number(int ival);
 struct expr *ev_decimal(float fval);
@@ -73,6 +75,7 @@ struct expr *ev_bool(int b);
 struct expr *ev_list(struct argnode *nodes);
 struct expr *ev_var(char *name);
 struct expr *ev_call(char *name, struct argnode *args);
+
 
 /* for tree walking */
 struct expr *expr_left(const struct expr *e);

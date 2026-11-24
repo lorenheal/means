@@ -20,6 +20,18 @@ struct list {
 #define LIST_FIND_NOT_FOUND (0)
 #define LIST_FIRST_POSITION (1)
 
+#define LIST_BADNULL    0x01
+#define LIST_BADREF     0x02
+#define LIST_BADSTALE   0x04
+#define LIST_BADHEAD    0x08
+#define LIST_BADTAIL    0x10
+#define LIST_BADLONG    0x20
+#define LIST_BADSHORT   0x40
+#define LIST_BADUNK  0x80
+
+unsigned int list_OK(const struct list *l);
+
+
 /* lifecycle */
 struct list *list_new(void);
 void         list_free(struct list *lst);

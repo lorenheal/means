@@ -21,7 +21,7 @@ stmt_new(enum stype st)
 	return s;
 	}
 
-static struct expr *
+struct expr *
 expr_new(enum etype et)
 	{
 	struct expr *e = calloc(1, sizeof *e);
