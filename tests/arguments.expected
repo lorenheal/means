@@ -1,0 +1,12 @@
+prove: too few arguments (got 0, need 1)
+s[ ]
+s[ ]
+p[ ]
+s[ 1 2 ]
+p[ 1 2 ]
+s[ 1 2 ]
+p[ 2 1 ]
+s[ 1 2 three ]
+p[ Point 1 b pt three ]
+s[ 1 2 three ]
+p[ Point 1 b pt three ]

@@ -19,6 +19,7 @@ struct param {
     struct value init;          /* compile-time default */
     struct param *next;
 	int required;   /* 1 = IS LIKE, 0 = has default */
+	int is_rest;
 };
 
 /* in params.h or near the function */
