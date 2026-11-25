@@ -43,6 +43,8 @@ struct param *param_from_decl(const char *name, struct expr *exemplar,    /* def
     /* Discover type (and default value if has_default!=0) from the exemplar. */
     struct value v = eval_expr(exemplar, scope);
 	struct param *p = param_new(name, v);
+	if(Value_Type(v) ==T_LIST) /* FIXME */
+		p->is_rest = 1;
 	p->required = !has_default;
     Value_Free(v);
     return p;
@@ -157,8 +159,7 @@ params_match(const struct func *f, struct value *argv, int argc) /* def */
 		required = 0;
 		for (p = f->params; p; p = p->next)
 			{	
-			diagnose(DIAG_DEBUG,DBG_PARAMS,0,0,"pm: %s %s %d\n",f->name,(p->name?p->name:"()"), Value_IsInit(p->init));
-			if (!Value_IsInit(p->init))
+			if(p->required) 
 				required++;
 			}
 		if (!(f->is_rest && fixed == 0))
@@ -175,6 +176,8 @@ params_match(const struct func *f, struct value *argv, int argc) /* def */
 					{
 					enum vtype want = p->vtype;
 					struct value got = argv[i];
+					if (p->is_rest)
+						continue;   /* rest collects whatever remains */
 					if (want != T_UNTYPED && want != T_ANY && want != T_LIST
 					        && Value_IsList(got)
 					        && list_length(Value_AsList(got)) == 1)
@@ -192,7 +195,7 @@ void
 report_match_failure(const char *name, match_result mr, /* def */
                      const struct func *f, int argc)
 	{
-	int need = f ? func_param_count(f) : 0;
+	int need = f ? func_param_count(f) : -1;
 
 	switch (mr)
 		{
@@ -219,7 +222,7 @@ report_match_failure(const char *name, match_result mr, /* def */
 	}
 
 void
-bind_fixed_params(struct func *f, struct value arguments, struct scope *scope) /* def */
+bind_fixed_params(struct func *f, struct value arguments, struct scope *scope)
 	{
 	struct list *lst = NULL;
 	struct param *p;
@@ -233,16 +236,13 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope) /
 		{
 		struct value v;
 		enum vtype want = p->vtype;
-
 		if (!lst || list_isempty(lst))
 			{
-			/* missing argument: use the stored default */
 			v = Value_Copy(p->init);
 			}
 		else
 			{
 			v = list_first(lst);
-			/* unwrap one-element list for a scalar parameter */
 			if (want != T_UNTYPED && want != T_ANY && want != T_LIST
 			        && Value_IsList(v)
 			        && list_length(Value_AsList(v)) == 1)
@@ -253,7 +253,19 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope) /
 				}
 			lst = list_rest(lst);
 			}
-
+		/* rest parameter receives the entire remaining list */
+		if (p->is_rest)
+			{
+			struct list *rest_list = list_new();
+			list_append(v, rest_list);
+			while (lst && !list_isempty(lst))
+				{
+				list_append(list_first(lst), rest_list);
+				lst = list_rest(lst);
+				}
+			Value_Free(v);
+			v = Value_List(rest_list);
+			}
 		if (want != T_UNTYPED && want != T_ANY && want != Value_Type(v))
 			{
 			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
@@ -262,14 +274,6 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope) /
 			return;
 			}
 		sym_set_value(p->name, v, scope);
-		if (Value_Type(v) == T_LIST)
-{
-    struct list *bound = Value_AsList(v);
-    diagnose(DIAG_DEBUG, DBG_PARAMS, 0, 0,
-             "bound %s: type=%d lval=%p ref=%d",
-             p->name, Value_Type(v), (void *)bound,
-             bound ? list_get_refcount(bound) : -1);
-}
 		Value_Free(v);
 		}
 	}

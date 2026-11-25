@@ -35,7 +35,7 @@ struct stmt *cur_head;
 %token <sval>  IDENT WORD
 %token <type>  TYPENAME
 
-%token THE THEN IS LIKE IF WHILE ELSE TO MEANS DO DONE RETURN
+%token THE THEN ARE IS LIKE IF WHILE ELSE TO MEANS DO DONE RETURN
 %token AND PLUS MINUS TIMES OVER
 %token LOGICAL_AND LOGICAL_OR EXCLUSIVE_OR
 %token GREATER_THAN LESS_THAN EQUAL_TO UNEQUAL_TO AT_LEAST AT_MOST
@@ -92,12 +92,19 @@ const_or_not
     | CONSTANT                    { $$ = 1; }
     ;
 
+is_are
+	: IS 
+	| ARE 
+	;
+
 assignment
-    : THE IDENT IS const_or_not expr
+    : THE IDENT is_are const_or_not expr
         { $$ = stmt_assign($2, $5, $4); }
-    | THE IDENT IS const_or_not expr_list
+    | THE IDENT is_are const_or_not expr_list
         { $$ = stmt_assign($2, ev_list($5), $4); }
     ;
+
+
 
 expr_list
     : expr AND expr
@@ -144,13 +151,22 @@ arglist
     | arglist AND expr     %prec AND   { $$ = arglist_append($3, $1); }
     ;
 */
-
-param
-    : THE IDENT IS primary 
-        { $$ = param_from_decl($2, $4, 1, defining_scope); free_expr($4); }
-    | THE IDENT IS LIKE primary 
-        { $$ = param_from_decl($2, $5, 0, defining_scope); free_expr($5); }
-    ;
+param 
+	: THE IDENT is_are primary
+		{
+		diagnose(DIAG_DEBUG, DBG_GRAMMAR, yylineno, 0,
+				 "param: %s (default)", $2);
+		$$ = param_from_decl($2, $4, 1, defining_scope);
+		free_expr($4);
+		}
+	| THE IDENT is_are LIKE primary
+		{
+		diagnose(DIAG_DEBUG, DBG_GRAMMAR, yylineno, 0,
+				 "param: %s (required)", $2);
+		$$ = param_from_decl($2, $5, 0, defining_scope);
+		free_expr($5);
+		}
+	;
 
 paramlist
     : /* empty */           { $$ = NULL; }

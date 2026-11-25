@@ -86,6 +86,11 @@ func_define(char *name, struct param *params, struct stmt *body, /* def */
 	f->lexical_scope = scope;
 	for (p = params; p; p = p->next)
 		n++;
+	for (p = params; p; p = p->next)
+		{
+		if (p->is_rest)
+			f->is_rest = 1;
+		}
 	/* FIXME above should use accessors */
 	f->param_count = n;
 	diagnose(DIAG_DEBUG, DBG_GRAMMAR, 0, 0, "defined %s with %d params", name, n);

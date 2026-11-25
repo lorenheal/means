@@ -104,8 +104,8 @@ call_func(const char *name, struct argnode *args, struct scope *scope) /* def */
 	int i;
 	struct func *last = NULL;
 	f = find_matching_func(name, argv, argc, scope, &mr);
-	diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "cf: match %s %d\n", 
-		((f && f->name)?(f->name):("(null)")), argc);
+	diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "cf: match %s %d mr: %d\n", 
+		((f && f->name)?(f->name):("(null)")), argc, mr);
 	if (f)
 		{
 		if (argc > 0)
