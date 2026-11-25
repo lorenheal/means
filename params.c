@@ -14,12 +14,13 @@ struct param *param_new(const char *name, struct value init) /* def */
 	struct param *p = calloc(1, sizeof *p);
 	if (!p)
 		{
-		diagnose(DIAG_ERROR, DBG_PARAMS, 0,0,"memory alloc fail in param_new");
-		return NULL;
+		diagnose(DIAG_FATAL, DBG_PARAMS, 0,0,"memory alloc fail in param_new");
+		return NULL; /* never reached */
 		}
 	p->name = strdup(name);
 	p->vtype = init.vtype;
 	p->init = Value_Copy(init);   /* store the compile-time value */
+	p->required = 0;
 	p->next = NULL;
 	return p;
 	}
@@ -36,37 +37,15 @@ struct param *param_append(struct param *list, const char *name, struct value in
 	return list;
 	}
 
-struct param *param_from_decl(const char *name, struct expr *e, int init, struct scope *scope) /* def */
+struct param *param_from_decl(const char *name, struct expr *exemplar,    /* def */
+                              int has_default, struct scope *scope)
 	{
-
-	struct vtypename vtypenames[] =
-		{
-			{T_UNTYPED, "Untyped"},
-			{T_EMPTY,"Empty"},
-			{T_NUMBER, "Number"},
-			{T_DECIMAL, "Decimal"},
-			{T_BOOL,"Bool"},
-			{T_WORD,"Word"},
-			{T_LIST,"List"},
-			{T_FUNC,"Func"},
-			{T_ANY, "Any"}
-		};
-
-	int is_rest = (e && e->etype == EV_CALL && e->name &&
-	               !e->args && strcmp(e->name, "rest") == 0);
-
-	struct value v = is_rest
-	                 ? Value_List(list_new())
-	                 : eval_expr(e, scope);
-	if(!init)
-		v = Value_Uninit(v);
-	
-	diagnose(DIAG_DEBUG, DBG_PARAMS, e->line, 0, "name: %s type %d (%s) init: %d", e->name, v.vtype,
-	         vtypenames[v.vtype].name, Value_IsInit(v));
+    /* Discover type (and default value if has_default!=0) from the exemplar. */
+    struct value v = eval_expr(exemplar, scope);
 	struct param *p = param_new(name, v);
-	if (p && is_rest)
-		p->is_rest = 1;
-	return p;
+	p->required = !has_default;
+    Value_Free(v);
+    return p;
 	}
 
 struct param *param_append_from_decl(struct param *list,  const char *name, /* def */
@@ -84,7 +63,14 @@ struct param *param_append_from_decl(struct param *list,  const char *name, /* d
 	return list;
 	}
 
-/* in params.c */
+struct param *param_from_type(const char *name, enum vtype t, int required)
+{
+    struct value v = Value_EmptyType(t);
+    struct param *p = param_new(name, v);   /* copies the empty value */
+    p->required = required;
+    return p;
+}
+
 struct param *param_link(struct param *list, struct param *p)
 {
     if (!p) return list;

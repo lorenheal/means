@@ -1,2 +1,2 @@
-The x is 4.
-print the x.
+the bb is 2.
+print the bb.

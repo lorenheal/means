@@ -3,6 +3,7 @@
 #include <string.h>
 #include "symtab.h"
 #include "means.tab.h"
+
 /*
 #define RETURN(tok) do { \
     fprintf(stderr, "tok %d (%s)\n", tok, yytext); \
@@ -21,38 +22,38 @@
 
 %%
 
-"the"              { RETURN( THE); }
-"then"             { RETURN( THEN); }
-"is"               { RETURN( IS); }
-"are"              { RETURN( IS); }
-"like"             { RETURN( LIKE); }
-"if"               { RETURN( IF); }
-"while"            { RETURN( WHILE); }
-"else"             { RETURN( ELSE); }
-"to"               { RETURN( TO); }
-"means"            { RETURN( MEANS); }
-"constant"         { RETURN( CONSTANT); }
-"empty"            { RETURN( EMPTY); }
-"stays" 	       { RETURN( STAYS); }
-"do"               { RETURN( DO); }
-"done"             { RETURN( DONE); }
-"return"           { return RETURN; }
-"and"              { RETURN( AND); }
-"plus"             { RETURN( PLUS); }
-"minus"            { RETURN( MINUS); }
-"times"            { RETURN( TIMES); }
-"over"             { RETURN( OVER); }
-"greater than"     { RETURN( GREATER_THAN); }
-"less than"        { RETURN( LESS_THAN); }
-"equal to"         { RETURN( EQUAL_TO); }
-"unequal to"       { RETURN( UNEQUAL_TO); }
-"at least"         { RETURN( AT_LEAST); }
-"at most"          { RETURN( AT_MOST); }
-"logical and"      { RETURN( LOGICAL_AND); }
-"logical or"       { RETURN( LOGICAL_OR); }
-"exclusive or"     { RETURN( EXCLUSIVE_OR); }
-"quantity"         { RETURN( QUANTITY); }
-"end"              { RETURN( END); }
+"the"              { RETURN(THE); }
+"then"             { RETURN(THEN); }
+"is"               { RETURN(IS); }
+"are"              { RETURN(IS); }
+"like"             { RETURN(LIKE); }
+"if"               { RETURN(IF); }
+"while"            { RETURN(WHILE); }
+"else"             { RETURN(ELSE); }
+"to"               { RETURN(TO); }
+"means"            { RETURN(MEANS); }
+"constant"         { RETURN(CONSTANT); }
+"empty"            { RETURN(EMPTY); }
+"stays" 	       { RETURN(STAYS); }
+"do"               { RETURN(DO); }
+"done"             { RETURN(DONE); }
+"return"           { RETURN(RETURN); }
+"and"              { RETURN(AND); }
+"plus"             { RETURN(PLUS); }
+"minus"            { RETURN(MINUS); }
+"times"            { RETURN(TIMES); }
+"over"             { RETURN(OVER); }
+"greater than"     { RETURN(GREATER_THAN); }
+"less than"        { RETURN(LESS_THAN); }
+"equal to"         { RETURN(EQUAL_TO); }
+"unequal to"       { RETURN(UNEQUAL_TO); }
+"at least"         { RETURN(AT_LEAST); }
+"at most"          { RETURN(AT_MOST); }
+"logical and"      { RETURN(LOGICAL_AND); }
+"logical or"       { RETURN(LOGICAL_OR); }
+"exclusive or"     { RETURN(EXCLUSIVE_OR); }
+"quantity"         { RETURN(QUANTITY); }
+"end"              { RETURN(END); }
 "list"             { yylval.ival = T_LIST; RETURN( TYPENAME); }
 "number"           { yylval.ival = T_NUMBER; RETURN( TYPENAME); }
 "word"             { yylval.ival = T_WORD; RETURN( TYPENAME); }

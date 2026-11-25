@@ -84,6 +84,13 @@ int Value_Print(const struct value *v) /* def */
 	return(printed);
 	}
 
+struct value Value_EmptyType(enum vtype t)
+	{
+	struct value ret = Value_Empty();
+	ret.vtype = t;
+	return(ret);
+	}
+
 long
 Value_AsNumber(struct value v) /* def */
 	{

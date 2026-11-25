@@ -50,19 +50,22 @@ func_set_builtin(struct func *f, struct value (*fn)(struct scope *))/* def */
 	f->builtin = fn;
 	}
 
+/* obsolete - returns 0 */
 int
 func_param_is_rest(const struct func *f, int i) /* def */
 	{
 	if (!f || i < 0 || i >= f->param_count)
 		return 0; /* WARN: out-of-range index */
-	return f->params[i].is_rest;
+	/* return f->params[i].is_rest; */
+	return (0);
 	}
 
+/* obsolete - no op  */
 void
 func_set_is_rest(struct func *f, int is_rest) /* def */
 	{
-	if (f)
-		f->is_rest = is_rest;
+/*	if (f)
+		f->is_rest = is_rest; */
 	}
 
 struct func *

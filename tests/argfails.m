@@ -21,9 +21,9 @@ DO
 DONE.
 
 prove.
-#prove: Too few arguments (got 0, need 1)
+#prove: too few arguments (got 0, need 1)
 show.
-#s[ 0 ]snd   
+#s[ 0 ]snd
 show empty.
 prove empty.
 #p mistmatch

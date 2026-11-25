@@ -96,3 +96,20 @@ void debug_usage(void);
 char *buildOptString(const Option *);
 
 #endif /* HELP_INCLUDE */
+
+/*	
+	struct vtypename vtypenames[] =
+		{
+			{T_UNTYPED, "Untyped"},
+			{T_EMPTY,"Empty"},
+			{T_NUMBER, "Number"},
+			{T_DECIMAL, "Decimal"},
+			{T_BOOL,"Bool"},
+			{T_WORD,"Word"},
+			{T_LIST,"List"},
+			{T_FUNC,"Func"},
+			{T_ANY, "Any"}
+		};
+	diagnose(DIAG_DEBUG, DBG_PARAMS, e->line, 0, "name: %s type %d (%s) init: %d", e->name, v.vtype,
+	         vtypenames[v.vtype].name, Value_IsInit(v));
+*/

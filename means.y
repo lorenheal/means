@@ -42,7 +42,7 @@ struct stmt *cur_head;
 %token QUANTITY END CONSTANT STAYS DOT
 %token EMPTY
 
-%type <eptr>   expr primary
+%type <eptr>   expr primary call_expr
 %type <sptr>   statement assignment return_stmt if_stmt while_stmt call_stmt
 %type <stmtl>  statement_list block opt_statement_list
 %type <argl>   expr_list
@@ -82,7 +82,7 @@ statement
     | return_stmt                 { $$ = $1; }
     | if_stmt                     { $$ = $1; }
     | while_stmt                  { $$ = $1; }
-    | call_stmt DOT               { $$ = $1; }
+    | call_stmt   DOT                { $$ = $1; }
     | block DOT                   { $$ = stmt_block($1); }
     | funcdef                     { $$ = NULL; }   /* body already terminated */
     ;
@@ -107,7 +107,8 @@ expr_list
     ;
 
 return_stmt
-    : RETURN expr_list DOT          { $$ = stmt_return($2); }
+    : RETURN expr DOT          { $$ = stmt_return(arglist_new($2)); }
+    | RETURN expr_list DOT     { $$ = stmt_return($2); }
     ;
 
 if_stmt
@@ -154,18 +155,22 @@ param
 paramlist
     : /* empty */           { $$ = NULL; }
     | param                 { $$ = $1; }
-    | paramlist AND param   { $$ = param_link($1, $3); }
+    |
+	paramlist AND param   { $$ = param_link($1, $3); }
     ;
 
 call_stmt
-    : IDENT DOT
+    : IDENT
         { $$ = stmt_call($1, NULL); }
-    | IDENT expr DOT
+    | IDENT expr_list 
+        { $$ = stmt_call($1, $2); }
+    | IDENT expr 
         { $$ = stmt_call($1, arglist_new($2)); }
     ;
 
 expr
     : primary
+	| call_expr
     | expr PLUS expr                      { $$ = ev_binop(PLUS, $1, $3); }
     | expr MINUS expr                     { $$ = ev_binop(MINUS, $1, $3); }
     | expr TIMES expr                     { $$ = ev_binop(TIMES, $1, $3); }
@@ -188,7 +193,16 @@ primary
     | WORD                                { $$ = ev_word($1); }
     | BOOLVAL                             { $$ = ev_bool($1); }
     | EMPTY                               { $$ = ev_list(NULL); }
-    | THE IDENT                           { $$ = ev_var($2); }
+	| THE IDENT                           { $$ = ev_var($2); }
+    ;
+
+call_expr
+    : IDENT
+        { $$ = ev_call($1, NULL); }
+    | IDENT expr
+        { $$ = ev_call($1, arglist_new($2)); }
+    | IDENT expr_list
+        { $$ = ev_call($1, $2); }
     ;
 
 %%

@@ -18,7 +18,7 @@ struct param {
     enum vtype vtype;
     struct value init;          /* compile-time default */
     struct param *next;
-    int is_rest;
+	int required;   /* 1 = IS LIKE, 0 = has default */
 };
 
 /* in params.h or near the function */

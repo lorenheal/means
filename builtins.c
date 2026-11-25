@@ -80,7 +80,7 @@ static const struct builtin_desc builtins[] =
 		{ NULL, NULL, 0, 0, NULL }
 	};
 
-void register_builtins(struct scope *global)
+void register_builtins(struct scope *global) /* def */
 	{
 	const struct builtin_desc *b;
 	for (b = builtins; b->name; b++)
@@ -96,8 +96,7 @@ void register_builtins(struct scope *global)
 			for (i = 0; i < b->param_count; i++)
 				{
 				char namebuf[32];
-				struct value v = Value_Empty();
-				v.vtype = b->types[i];
+				struct value v = Value_EmptyType(b->types[i]);
 				snprintf(namebuf, sizeof namebuf, "_%.18s_%d", f->name, i + 1);
 				func_add_param(f, namebuf, v);
 				}

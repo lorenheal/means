@@ -55,6 +55,7 @@ struct value Value_Empty(void);
 struct value Value_Copy(struct value v);          /* returns an owned copy */
 void         Value_Free(struct value v);          /* free owned copy with this */
 int         Value_Print(const struct value *v);   /* number of items printed */
+struct value Value_EmptyType(enum vtype t);
 /**/
 /* the Value_As* functions pull out a type from the Value abstraction */
 const char * Value_AsCStr(struct value v);
