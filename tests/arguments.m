@@ -14,7 +14,8 @@ DO
 DONE.
 
 prove.
-##prove: too few arguments (got 0, need 1)
+ ##prove: too few arguments (got 0, need 1)
+#[rmf0:p] match failure with null function (prove, argc 0)
 show.
 #s[ ]
 show empty.

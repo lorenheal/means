@@ -227,7 +227,7 @@ report_match_failure(const char *name, match_result mr, /* def */
 	if (!f)
 		{
 		if(!name) name = "(unnamed)";
-        diagnose(DIAG_FATAL, DBG_PARAMS, "rmf0", 0, 0,
+        diagnose(DIAG_ERROR, DBG_PARAMS, "rmf0", 0, 0,
                  "match failure with null function (%s, argc %d)", name, argc);
 		}
 	else
