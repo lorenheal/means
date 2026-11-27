@@ -16,21 +16,8 @@ enum vtype
 	T_FUNC,
 	T_ANY=100
 	};
+
 struct vtypename { enum vtype vtype; char *name; };
-/*
-struct vtypename vtypenames[] = 
-{ 
-	{T_UNTYPED, "Untyped"},
-	{T_EMPTY,"Empty"},
-	{T_NUMBER, "Number"},
-	{T_DECIMAL, "Decimal"},
-	{T_BOOL,"Bool"},
-	{T_WORD,"Word"},
-	{T_LIST,"List"},
-	{T_FUNC,"Func"},
-	{T_ANY, "Any"}
-};
-*/
 
 struct list;          /* defined later */
 struct func;          /* defined later */
@@ -46,6 +33,9 @@ struct value
 	struct func    *fnval;     
 	int           initialized; /* Almost always 1; 0 for type but unassigned arguments */
 	};
+
+char * value_fmt(char *buf, size_t n, struct value v);
+
 
 /**/
 int  Value_IsInit(struct value v);          /* 1 if the value may be used */
@@ -82,6 +72,5 @@ struct value Value_Word(const char *s);
 struct value Value_List(struct list *lst);
 struct value Value_Func(struct func *f);
 /**/
-
 
 #endif /* VALUE_H */

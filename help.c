@@ -19,14 +19,14 @@ unsigned int error_count = 0;
 * Used in help(), getopthelp(), and main().
 */
 
-void help(char *progname, char *optstring, char *helptext)
+void help(char *progname, char *optstring, char *helptext) /* def */
 	{
 	printf("Usage:\n%s ", progname);
 	getopthelp(optstring);
 	printf("%s\n", helptext);
 	}
 
-void nhelp(char *progname, const Option *opttable)
+void nhelp(char *progname, const Option *opttable) /* def */
 	{
 	char * optstring;
 	printf("Usage:\n%s ", progname);
@@ -49,7 +49,7 @@ void nhelp(char *progname, const Option *opttable)
 */
 
 void
-getopthelp(char *optstring)
+getopthelp(char *optstring) /* def */
 	{
 	int i;
 	int grouping = false;
@@ -103,7 +103,7 @@ getopthelp(char *optstring)
  ************************************************************/
 
 int
-getopttablesize(const Option *table)
+getopttablesize(const Option *table) /* def */
 	{
 	int ret = 0;
 	if(table)
@@ -114,7 +114,7 @@ getopttablesize(const Option *table)
 	return(ret);
 	}
 
-char *debug_optstring(void)
+char *debug_optstring(void) /* def */
 	{
 	char *s = malloc(DBG_NBITS + 1);
 	if(s) memset(s, 0, DBG_NBITS+1);
@@ -130,7 +130,7 @@ char *debug_optstring(void)
 *
 */
 char *
-buildOptString (const Option *opttable)
+buildOptString (const Option *opttable) /* def */
 	{
 	int i = 0, options = 0;
 	char *s;
@@ -155,7 +155,7 @@ buildOptString (const Option *opttable)
 	return (ret);
 	}
 
-unsigned setdebug(const char *options)
+unsigned setdebug(const char *options) /* def */
 	{
 	unsigned ret = debug_mask;
 	if (!options) return ret;
@@ -170,14 +170,14 @@ unsigned setdebug(const char *options)
 				}
 		if (!d->letter)            /* unknown letter */
 			{
-			diagnose(DIAG_WARNING,DBG_GETOPT,0,0, "Unknown debug area '%c'\n", *p);
+			diagnose(DIAG_WARNING,DBG_GETOPT, "hsd", 0,0, "Unknown debug area '%c'\n", *p);
 			debug_usage();
 			}
 		}
 	return ret;
 	}
 
-void debug_usage(void)
+void debug_usage(void) /* def */
 	{
 	fputs("debug areas:", stderr);
 	for (const struct dbgopt *d = dbgopts; d->letter; d++)
@@ -193,7 +193,7 @@ void debug_usage(void)
 * - Optional: print the offending line with a caret.
 * - Column can wait if you do not have it yet.
 
-void diagnose(int severity, int area, int line, int col, const char *fmt, ...)
+void diagnose(int severity, int area, int line, int col, const char *fmt, ...) 
 {
     va_list ap;
     va_start(ap, fmt);
@@ -206,18 +206,26 @@ setvbuf(stderr, NULL, _IONBF, 0);
 
 */
 
-/* enum severity { DIAG_FATAL, DIAG_DEBUG, DIAG_WARNING, DIAG_ERROR };*/
-void diagnose(enum severity sev, unsigned area, int line, int col,
-              const char *fmt, ...)
+static const char *area_letters(unsigned area, char *buf, int n)
 	{
-	(void)col;                       /* unused for now */
-	FILE *out = stderr;              /* errors and warnings belong on stderr */
-	/**/
-	int should_print = 0;
-	int should_count = 0;
-	int should_exit  = 0;
-	int exit_code    = 0;
-	/**/
+	int i = 0;
+	for (const struct dbgopt *d = dbgopts; d->letter && i < n - 1; d++)
+		if (area & d->bit)
+			buf[i++] = d->letter;
+	buf[i] = '\0';
+	return buf;
+	}
+
+/* enum severity { DIAG_FATAL, DIAG_DEBUG, DIAG_WARNING, DIAG_ERROR };*/
+
+void diagnose(enum severity sev, unsigned area, const char *where,
+              int line, int col, const char *fmt, ...)
+	{
+	(void)col;
+	FILE *out = stdout;
+	int should_print = 0, should_count = 0, should_exit = 0, exit_code = 0;
+	char letters[8];
+		/**/
 	switch (sev)
 		{
 		case DIAG_DEBUG:
@@ -233,27 +241,27 @@ void diagnose(enum severity sev, unsigned area, int line, int col,
 		case DIAG_FATAL:
 			should_print = 1;
 			should_count = 1;
-			should_exit  = 1;
-			exit_code    = (area != DBG_OK) ? (int)area : 1;
+			should_exit = 1;
+			exit_code = (area != DBG_OK) ? (int)area : 1;
 			break;
 		default:
 			break;
 		}
-	/**/
+		/**/
 	if (should_print && fmt)
 		{
-		va_list ap;
-		va_start(ap, fmt);
+		area_letters(area, letters, sizeof letters);
+		fprintf(out, "[%s:%s] ", where ? where : "?", letters);
 		if (line > 0)
 			fprintf(out, "line %d: ", line);
+		va_list ap;
+		va_start(ap, fmt);
 		vfprintf(out, fmt, ap);
 		fputc('\n', out);
 		va_end(ap);
 		}
-	/**/
 	if (should_count)
 		error_count++;
-	/**/
 	if (should_exit)
 		exit(exit_code);
 	}

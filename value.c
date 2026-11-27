@@ -84,6 +84,50 @@ int Value_Print(const struct value *v) /* def */
 	return(printed);
 	}
 
+char * value_fmt(char *buf, size_t n, struct value v)
+	{
+	if (buf && n > 0)
+		{
+		switch (v.vtype) 
+			{
+			case T_EMPTY:
+				snprintf(buf, n, "{empty}");
+				break;
+			case T_NUMBER:
+				snprintf(buf, n, "{i:%ld}", v.ival);
+				break;
+			case T_DECIMAL:
+				snprintf(buf, n, "{f:%g}", (double)v.fval);
+				break;
+			case T_BOOL:
+				snprintf(buf, n, "{b:%s}", v.ival ? "t" : "f");
+				break;
+			case T_WORD:
+				snprintf(buf, n, "{m:\"%.8s\"}", v.mval ? mstring_cstr(v.mval) : "");
+				break;
+			case T_LIST:
+				snprintf(buf, n, "{l[%d]}", v.lval ? list_length(v.lval) : 0);
+				break;
+			case T_FUNC:
+				snprintf(buf, n, "{fn:%p}", (void *) v.fnval);
+			/*
+				snprintf(buf, n, "{fn:%s}", v.fnval && v.fnval->name ? v.fnval->name : "?");
+				*/
+				break;
+/*			case T_INSTANCE:
+*				snprintf(buf, n, "{inst:%s}",
+*						 v.inst && v.inst->type && v.inst->type->name
+*							 ? v.inst->type->name : "?");
+*				break;
+*/
+			default:
+				snprintf(buf, n, "{t:%d}", v.vtype);
+				break;
+			}
+		}
+	return(buf);
+	}
+
 struct value Value_EmptyType(enum vtype t)
 	{
 	struct value ret = Value_Empty();

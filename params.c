@@ -14,7 +14,7 @@ struct param *param_new(const char *name, struct value init) /* def */
 	struct param *p = calloc(1, sizeof *p);
 	if (!p)
 		{
-		diagnose(DIAG_FATAL, DBG_PARAMS, 0,0,"memory alloc fail in param_new");
+		diagnose(DIAG_FATAL, DBG_PARAMS,"pn", 0,0,"memory alloc fail in param_new");
 		return NULL; /* never reached */
 		}
 	p->name = strdup(name);
@@ -23,6 +23,27 @@ struct param *param_new(const char *name, struct value init) /* def */
 	p->required = 0;
 	p->next = NULL;
 	return p;
+	};
+
+	/*
+	struct param {
+    char *name;
+    enum vtype vtype;
+    struct value init;          compile-time default 
+    struct param *next;
+    int required;    1 = IS LIKE, 0 = has default 
+    int is_rest;
+	*/
+
+void show_param(struct param *p, const char *where, int line)
+	{
+	if (!where) where="where?";
+	if(p)
+		diagnose(DIAG_DEBUG,DBG_PARAMS,where,line,0,
+			"[(%d) p:%s [def:%s] n:%p %s %s]", (int) p->vtype, p->name, 
+			p->init, p->next, (p->required?"required":"default"), (p->is_rest?"rest":"not rest"));
+	else
+		diagnose(DIAG_DEBUG,DBG_PARAMS,where,line,0,"p:(nil)");
 	}
 
 struct param *param_append(struct param *list, const char *name, struct value init) /* def */
@@ -108,7 +129,7 @@ argnode_new(struct expr *e) /* def */
 	struct argnode *a = calloc(1, sizeof *a);
 	if (!a)
 		{
-		diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0, "out of memory");
+		diagnose(DIAG_ERROR, DBG_PARAMS, "an", 0, 0, "out of memory");
 		exit(1);
 		}
 	a->expr = e;
@@ -151,6 +172,9 @@ params_match(const struct func *f, struct value *argv, int argc) /* def */
 	match_result result = MATCH_OK;
 	const struct param *p;
 	int i, fixed, required;
+	diagnose(DIAG_DEBUG, DBG_PARAMS, "pm0", 0, 0,
+         "enter %s argc=%d params=%p", f ? f->name : "(null)", argc,
+         f ? (void *)f->params : NULL);
 	if (!f)
 		result = MATCH_NULL_FUNC;
 	else
@@ -158,8 +182,8 @@ params_match(const struct func *f, struct value *argv, int argc) /* def */
 		fixed = func_param_count(f);
 		required = 0;
 		for (p = f->params; p; p = p->next)
-			{	
-			if(p->required) 
+			{
+			if(p->required)
 				required++;
 			}
 		if (!(f->is_rest && fixed == 0))
@@ -182,8 +206,12 @@ params_match(const struct func *f, struct value *argv, int argc) /* def */
 					        && Value_IsList(got)
 					        && list_length(Value_AsList(got)) == 1)
 						got = list_first(Value_AsList(got));
+					diagnose(DIAG_DEBUG, DBG_PARAMS, "pm1", 0, 0,
+					         "want %d got %d", want, Value_Type(got));
 					if (want != T_UNTYPED && want != T_ANY && want != Value_Type(got))
 						result = MATCH_TYPE_MISMATCH;
+					diagnose(DIAG_DEBUG, DBG_PARAMS, "pm2", 0, 0,
+					         "%s want %d got %d", p->name, p->vtype, Value_Type(got));
 					}
 				}
 			}
@@ -195,29 +223,37 @@ void
 report_match_failure(const char *name, match_result mr, /* def */
                      const struct func *f, int argc)
 	{
-	int need = f ? func_param_count(f) : -1;
-
-	switch (mr)
+	int need = -1 ; 
+	if (!f)
 		{
-		case MATCH_TOO_FEW:
-			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-			         "%s: too few arguments (got %d, need %d)",
-			         name, argc, need);
-			break;
-		case MATCH_TOO_MANY:
-			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-			         "%s: too many arguments (got %d, need %d)",
-			         name, argc, need);
-			break;
-		case MATCH_TYPE_MISMATCH:
-			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-			         "%s: argument type mismatch", name);
-			break;
-		case MATCH_NULL_FUNC:
-		default:
-			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
-			         "undefined function: %s", name);
-			break;
+		if(!name) name = "(unnamed)";
+        diagnose(DIAG_FATAL, DBG_PARAMS, "rmf0", 0, 0,
+                 "match failure with null function (%s, argc %d)", name, argc);
+		}
+	else
+		{
+		switch (mr)
+			{
+			case MATCH_TOO_FEW:
+				diagnose(DIAG_ERROR, DBG_PARAMS,"rmf1", 0, 0,
+						 "%s: too few arguments (got %d, need %d)",
+						 name, argc, need);
+				break;
+			case MATCH_TOO_MANY:
+				diagnose(DIAG_ERROR, DBG_PARAMS,"rmf2", 0, 0,
+						 "%s: too many arguments (got %d, need %d)",
+						 name, argc, need);
+				break;
+			case MATCH_TYPE_MISMATCH:
+				diagnose(DIAG_ERROR, DBG_PARAMS,"rmf3", 0, 0,
+						 "%s: argument type mismatch", name);
+				break;
+			case MATCH_NULL_FUNC:
+			default:
+				diagnose(DIAG_ERROR, DBG_PARAMS,"rmf4", 0, 0,
+						 "undefined function: %s", name);
+				break;
+			}
 		}
 	}
 
@@ -268,7 +304,7 @@ bind_fixed_params(struct func *f, struct value arguments, struct scope *scope)
 			}
 		if (want != T_UNTYPED && want != T_ANY && want != Value_Type(v))
 			{
-			diagnose(DIAG_ERROR, DBG_PARAMS, 0, 0,
+			diagnose(DIAG_ERROR, DBG_PARAMS,"bfp", 0, 0,
 			         "type mismatch for %s", p->name ? p->name : "?");
 			Value_Free(v);
 			return;

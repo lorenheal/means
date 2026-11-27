@@ -19,6 +19,7 @@ enum severity
     M(BUILTIN, 'b', "builtins") \
     M(EMIT,     'e', "emit") \
     M(EXEC,     'x', "exec") \
+    M(FUNC,     'f', "function") \
     M(GRAMMAR,  'g', "grammar") \
     M(LIST,     'l', "list") \
     M(GETOPT,   'o', "getopt") \
@@ -52,6 +53,7 @@ enum {
 #define DBG_BUILTIN  (1u << DBG_BUILTIN_BIT)
 #define DBG_EMIT     (1u << DBG_EMIT_BIT)
 #define DBG_EXEC     (1u << DBG_EXEC_BIT)
+#define DBG_FUNC     (1u << DBG_FUNC_BIT)
 #define DBG_GRAMMAR  (1u << DBG_GRAMMAR_BIT)
 #define DBG_GETOPT   (1u << DBG_GETOPT_BIT)
 #define DBG_LIST     (1u << DBG_LIST_BIT)
@@ -73,6 +75,7 @@ static const struct dbgopt dbgopts[] = {
     { 0, 0, NULL }
 };
 
+
 typedef struct helpopt
 	{ 
 	const char *flag; 
@@ -86,7 +89,7 @@ void nhelp(char *, const Option *);
 void getopthelp(char *optstring);
 
 
-void diagnose(enum severity sev, unsigned area, int line, int col, const char *fmt, ...);
+void diagnose(enum severity sev, unsigned area, const char *where, int line, int col, const char *fmt, ...);
 unsigned int setdebug(const char *options);
 
 
@@ -96,20 +99,3 @@ void debug_usage(void);
 char *buildOptString(const Option *);
 
 #endif /* HELP_INCLUDE */
-
-/*	
-	struct vtypename vtypenames[] =
-		{
-			{T_UNTYPED, "Untyped"},
-			{T_EMPTY,"Empty"},
-			{T_NUMBER, "Number"},
-			{T_DECIMAL, "Decimal"},
-			{T_BOOL,"Bool"},
-			{T_WORD,"Word"},
-			{T_LIST,"List"},
-			{T_FUNC,"Func"},
-			{T_ANY, "Any"}
-		};
-	diagnose(DIAG_DEBUG, DBG_PARAMS, e->line, 0, "name: %s type %d (%s) init: %d", e->name, v.vtype,
-	         vtypenames[v.vtype].name, Value_IsInit(v));
-*/

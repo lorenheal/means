@@ -22,6 +22,7 @@ struct func
 	int is_rest;
 	};
 
+void show_func(struct func *f, const char *where, int line);
 
 struct func *func_new(void);
 struct func *func_create(const char *name, struct scope *lexical);

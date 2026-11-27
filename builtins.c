@@ -90,7 +90,7 @@ void register_builtins(struct scope *global) /* def */
 			{
 			int i;
 			if (b->param_count > MAX_PARAMS)
-				diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0,
+				diagnose(DIAG_ERROR, DBG_BUILTIN, "rb", 0, 0,
 				         "%s: too many parameters (%d > %d)",
 				         b->name, b->param_count, MAX_PARAMS);
 			for (i = 0; i < b->param_count; i++)
@@ -117,12 +117,12 @@ static struct list *get_arguments(struct scope *scope)
 			}
 		else
 			{
-			diagnose(DIAG_ERROR,DBG_SYMTAB,0,0,"arguments is not a list.");
+			diagnose(DIAG_ERROR,DBG_SYMTAB,"ga1",0,0,"arguments is not a list.");
 			}
 		}
 	else
 		{
-		diagnose(DIAG_ERROR,DBG_SYMTAB,0,0,"No arguments list.");
+		diagnose(DIAG_ERROR,DBG_SYMTAB,"ga2",0,0,"No arguments list.");
 		}
 	return(ret);
 	}
@@ -163,7 +163,7 @@ builtin_exit(struct scope *scope)
 	if (!Value_IsEmpty(msgv) && Value_IsWord(msgv))
 		{
 		const char *msg = mstring_cstr(Value_AsWord(msgv));
-		diagnose(DIAG_WARNING, DBG_BUILTIN, 0, 0, "%s", msg);
+		diagnose(DIAG_WARNING, DBG_BUILTIN,"be1", 0, 0, "%s", msg);
 		}
 
 	Value_Free(codev);
@@ -171,7 +171,7 @@ builtin_exit(struct scope *scope)
 
 	/* DIAG_FATAL prints (if fmt is non-NULL) then exits with the given code.
 	   Passing NULL for fmt makes it silent. */
-	diagnose(DIAG_FATAL, (unsigned)code, 0, 0, NULL);
+	diagnose(DIAG_FATAL, (unsigned)code, "be2", 0, 0, NULL);
 
 	return Value_Empty();   /* unreachable */
 	}
@@ -235,7 +235,7 @@ builtin_length(struct scope *scope)
 	/**/
 	if(Value_IsEmpty(item))
 		{
-		diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0, "length of what?");
+		diagnose(DIAG_ERROR, DBG_BUILTIN, "ble", 0, 0, "length of what?");
 		}
 	else
 		switch (Value_Type(item))
@@ -247,8 +247,7 @@ builtin_length(struct scope *scope)
 				ret = Value_Number(mstring_len(Value_AsWord(item)));
 				break;
 			default:
-				diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0,
-				         "length: unsupported type");
+				diagnose(DIAG_ERROR, DBG_BUILTIN,"ble",0, 0, "unsupported vtype (%d)", Value_Type(item));
 				break;
 			}
 	Value_Free(item);
@@ -264,7 +263,7 @@ builtin_find(struct scope *scope)
 	/**/
 	if (Value_IsEmpty(haystack))
 		{
-		diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0, "find: empty haystack");
+		diagnose(DIAG_ERROR, DBG_BUILTIN, "bf", 0, 0, "empty haystack");
 		}
 	else
 		switch (Value_Type(haystack))
@@ -278,8 +277,7 @@ builtin_find(struct scope *scope)
 					                       mstring_find(Value_AsWord(needle), Value_AsWord(haystack))));
 				break;
 			default:
-				diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0,
-				         "find: unsupported type");
+				diagnose(DIAG_ERROR, DBG_BUILTIN, "bf", 0, 0, "unsupported type");
 				break;
 			}
 	Value_Free(needle);
@@ -382,7 +380,7 @@ static struct value builtin_last(struct scope *scope)
 			}
 		break;
 		default:
-			diagnose(DIAG_ERROR, DBG_BUILTIN, 0, 0, "last: unsupported type\n");
+			diagnose(DIAG_ERROR, DBG_BUILTIN, "bla", 0, 0, "unsupported type\n");
 			break;
 		}
 	return ret;
@@ -416,10 +414,8 @@ static struct value builtin_insert(struct scope *scope)
 	if (Value_Type(cont) == T_LIST)
 		{
 		struct list *lst = Value_AsList(cont);
-        diagnose(DIAG_DEBUG, DBG_LIST, 0, 0,
-                 "insert: cont type=%d lval=%p ref=%d",
-                 Value_Type(cont), (void *)lst,
-                 lst ? list_get_refcount(lst) : -1);
+        diagnose(DIAG_DEBUG, DBG_LIST, "bi", 0, 0, "cont type=%d lval=%p ref=%d",
+                 Value_Type(cont), (void *)lst, lst ? list_get_refcount(lst) : -1);
 		list_insert(small, Value_AsList(cont));
 		ret = Value_Copy(cont);
 		}

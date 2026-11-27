@@ -35,6 +35,7 @@ void report_match_failure(const char *name, match_result mr,
                      const struct func *f, int argc);
 
 match_result params_match(const struct func *f, struct value *argv, int argc);
+void show_param(struct param *p, const char *where, int line);
 
 
 struct param *param_new(const char *name, struct value init);

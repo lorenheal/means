@@ -20,9 +20,12 @@ struct scope
 	{
 	char         *name;       /* debugging only */
 	struct sym   *syms;
+	struct scope *activation;   /* runtime; set while this scope's function runs */
 	struct scope *outer;
+
 	};
 
+void dump_chain(struct scope *s, int depth);
 struct value sym_value(struct sym *s);
 extern struct scope *global_scope;
 

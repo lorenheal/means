@@ -9,12 +9,10 @@ if [ -f ${tst} ]; then
 	grep "^#" $tst | sed 's/^#//' > ${tst%.m}.expected 
 	cat "$tst"; 
 	echo "=== EXPECTED ==="; 
-	cat "${tst%.m}.expected" ;
-	cat "${tst%.m}.expected" # | hexdump -c 
+	cat "${tst%.m}.expected" | hexdump -c
 	echo "=== ACTUAL ==="; 
-	../means $flags -f "$tst" > ${tst%.m}.actual ;
-	 cat < ${tst%.m}.actual;
-	# hexdump -c < ${tst%.m}.actual 
+	../means $flags -f "$tst" 2>&1 > ${tst%.m}.actual ;
+	 cat < ${tst%.m}.actual | hexdump -c;
 	} 2>&1 | xcat
 fi
 rm -f ${tst%.m}.actual ${tst%.m}.expected

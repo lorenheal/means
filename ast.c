@@ -7,13 +7,24 @@
 
 extern int yylineno;
 
+struct etypename etypenames[] =
+	{
+	{EV_NUM, "EV_NUM"},
+	{EV_WORD,"EV_WORD"},
+	{EV_BOOL, "EV_BOOL"},
+	{EV_LIST, "EV_LIST"},
+	{EV_VAR,"EV_VAR"},
+	{EV_BINOP,"EV_BINOP"},
+	{EV_CALL,"EV_CALL"}
+	};
+
 static struct stmt *
 stmt_new(enum stype st)
 	{
 	struct stmt *s = calloc(1, sizeof *s);
 	if (!s)
 		{
-		diagnose(DIAG_ERROR, DBG_AST, yylineno, 0, "out of memory");
+		diagnose(DIAG_ERROR, DBG_AST, "sn", yylineno, 0, "out of memory");
 		exit(1);
 		}
 	s->stype = st;
@@ -27,7 +38,7 @@ expr_new(enum etype et)
 	struct expr *e = calloc(1, sizeof *e);
 	if (!e)
 		{
-		diagnose(DIAG_ERROR, DBG_AST, yylineno, 0, "out of memory");
+		diagnose(DIAG_ERROR, DBG_AST, "en", yylineno, 0, "out of memory");
 		exit(1);
 		}
 	e->etype = et;

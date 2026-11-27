@@ -76,7 +76,7 @@ struct list *list_append(struct value v, struct list *lst) /* def */
 		lst->length++;
 		}
 	else
-		diagnose(DIAG_ERROR, DBG_LIST, 0,0, "null list in append");
+		diagnose(DIAG_ERROR, DBG_LIST,"la", 0,0, "null list in append");
 	return(ret);
 	}
 
@@ -93,7 +93,7 @@ struct list *list_insert(struct value v, struct list *lst) /* def */
 		lst->length++;
 		}
 	else
-		diagnose(DIAG_ERROR, DBG_LIST, 0,0, "null list in insert");
+		diagnose(DIAG_ERROR, DBG_LIST,"li", 0,0, "null list in insert");
 	return(lst);
 	}
 

@@ -27,15 +27,15 @@ struct stmt *cur_head;
     struct argnode   *argl;
     struct param     *pinfo;
     struct func      *fptr;
+	struct scope     *scope;
     int               type;
 }
 
 %token <ival>  NUMBER BOOLVAL
 %token <fval>  DECIMAL
 %token <sval>  IDENT WORD
-%token <type>  TYPENAME
 
-%token THE THEN ARE IS LIKE IF WHILE ELSE TO MEANS DO DONE RETURN
+%token THE THEN ARE IS BY LIKE IF WHILE ELSE TO MEANS DO DONE RETURN
 %token AND PLUS MINUS TIMES OVER
 %token LOGICAL_AND LOGICAL_OR EXCLUSIVE_OR
 %token GREATER_THAN LESS_THAN EQUAL_TO UNEQUAL_TO AT_LEAST AT_MOST
@@ -137,14 +137,27 @@ block
     ;
 
 funcdef
+    : TO IDENT paramlist MEANS TO
+        {
+          $<scope>$ = defining_scope;          /* save */
+          defining_scope = scope_new($2, defining_scope);
+        }
+      statement
+        {
+          struct scope *lex = defining_scope;
+          defining_scope = $<scope>6;          /* restore */
+          $$ = func_define($2, $3, $7, lex);
+        }
+    ;
+/*
+funcdef
     : TO IDENT paramlist MEANS TO statement
         {
-          diagnose(DIAG_DEBUG, DBG_GRAMMAR, yylineno, 0,
-                   "funcdef reducing: %s", $2);
+          diagnose(DIAG_DEBUG, DBG_GRAMMAR, "yfd", yylineno, 0, "%s", $2);
           $$ = func_define($2, $3, $6, defining_scope);
         }
     ;
-
+*/
 /*
 arglist
     : expr                 %prec AND   { $$ = arglist_new($1); }
@@ -154,15 +167,14 @@ arglist
 param 
 	: THE IDENT is_are primary
 		{
-		diagnose(DIAG_DEBUG, DBG_GRAMMAR, yylineno, 0,
-				 "param: %s (default)", $2);
+		diagnose(DIAG_DEBUG, DBG_GRAMMAR, "yp1", yylineno, 0, "%s (default)", $2);
 		$$ = param_from_decl($2, $4, 1, defining_scope);
 		free_expr($4);
 		}
 	| THE IDENT is_are LIKE primary
 		{
-		diagnose(DIAG_DEBUG, DBG_GRAMMAR, yylineno, 0,
-				 "param: %s (required)", $2);
+		diagnose(DIAG_DEBUG, DBG_GRAMMAR, "yp2", yylineno, 0,
+				 "%s (required)", $2);
 		$$ = param_from_decl($2, $5, 0, defining_scope);
 		free_expr($5);
 		}
@@ -171,12 +183,11 @@ param
 paramlist
     : /* empty */           { $$ = NULL; }
     | param                 { $$ = $1; }
-    |
-	paramlist AND param   { $$ = param_link($1, $3); }
+    | paramlist AND param   { $$ = param_link($1, $3); }
     ;
 
 call_stmt
-    : IDENT
+    : IDENT    
         { $$ = stmt_call($1, NULL); }
     | IDENT expr_list 
         { $$ = stmt_call($1, $2); }
@@ -213,17 +224,17 @@ primary
     ;
 
 call_expr
-    : IDENT
-        { $$ = ev_call($1, NULL); }
-    | IDENT expr
-        { $$ = ev_call($1, arglist_new($2)); }
-    | IDENT expr_list
-        { $$ = ev_call($1, $2); }
+    : BY IDENT           
+        { $$ = ev_call($2, NULL); }
+    | BY IDENT expr
+        { $$ = ev_call($2, arglist_new($3)); }
+    | BY IDENT expr_list
+        { $$ = ev_call($2, $3); }
     ;
 
 %%
 
 void yyerror(const char *s)
 {
-    diagnose(DIAG_ERROR, DBG_GRAMMAR, yylineno, 0, "%s", s);
+    diagnose(DIAG_ERROR, DBG_GRAMMAR,"yye", yylineno, 0, "%s", s);
 }

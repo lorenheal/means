@@ -1,0 +1,17 @@
+Unused (or only used inside their own module):
+
+param_append, param_from_type, param_link, params_free — defined in params.c; no external callers in the current set.
+argnode_next, arglist_append — same.
+func_param_is_rest, func_add_param, func_param_name, func_param_vtype — defined in func.c; only func_param_count and func_is_rest are used outside.
+
+Direct member access outside the owning module:
+In params-17.c (should go through func accessors):
+
+f->params, f->name, f->is_rest — used in params_match and bind_fixed_params.
+
+In func-7.c (should go through param accessors):
+
+p->name, p->vtype — used in func_param_name and func_param_vtype.
+
+Everything else in the recent files goes through the accessors. The two spots above are the only remaining leaks.
+

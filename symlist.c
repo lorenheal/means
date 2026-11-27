@@ -10,7 +10,7 @@ symlist_new(const char *name)
 	struct sym *s = calloc(1, sizeof *s);
 	if (!s)
 		{
-		diagnose(DIAG_ERROR, DBG_SYMTAB, 0, 0, "out of memory");
+		diagnose(DIAG_ERROR, DBG_SYMTAB,"sln", 0, 0, "out of memory");
 		exit(1);
 		}
 	s->name = name ? strdup(name) : NULL;

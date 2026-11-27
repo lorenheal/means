@@ -13,7 +13,7 @@ func_new(void) /* def */
 	struct func *ret = calloc(1, sizeof *ret);
 	if (!ret)
 		{
-		diagnose(DIAG_ERROR, DBG_AST, 0, 0, "out of memory in func_new");
+		diagnose(DIAG_ERROR, DBG_AST, "fn", 0, 0, "out of memory in func_new");
 		exit(1);
 		}
 	return ret;
@@ -37,6 +37,20 @@ func_create_builtin(const char *name, struct scope *lexical, /* def */
 	func_set_is_rest(f, is_rest);
 	return f;
 	}
+
+void show_func(struct func *f, const char *where, int line)
+{
+    if (!where) where = "";
+    if (f)
+        diagnose(DIAG_DEBUG, DBG_FUNC, where, line, 0,
+                 "[%s p:%p n:%d body:%p lex:%p next:%p builtin:%p %s]\n",
+                 f->name, (void *)f->params, f->param_count,
+                 (void *)f->body, (void *)f->lexical_scope,
+                 (void *)f->next_overload, (void *)f->builtin,
+                 f->is_rest ? "rest" : "");
+    else
+        diagnose(DIAG_DEBUG, DBG_FUNC, where, 0, 0, "[:(nil)]");
+}
 
 void
 func_set_body(struct func *f, struct stmt *body)/* def */
@@ -74,27 +88,35 @@ func_next_overload(const struct func *f) /* def */
 	}
 
 struct func *
-func_define(char *name, struct param *params, struct stmt *body, /* def */
-            struct scope *scope)
+func_define(char *name, struct param *params, struct stmt *body, struct scope *enclosing) /* def */
 	{
+	struct scope *local = scope_new(name, enclosing);
 	struct func *f = func_new();
 	struct param *p;
-	int n=0;
-	f->name = name;
-	f->params = params;
-	f->body = body;
-	f->lexical_scope = scope;
-	for (p = params; p; p = p->next)
-		n++;
+	int n = 0;
+	int saw_rest = 0;
+	/**/
+	f->name          = name;
+	f->params        = params;
+	f->body          = body;
+	f->lexical_scope = local;
 	for (p = params; p; p = p->next)
 		{
+		if (saw_rest)
+			{
+			diagnose(DIAG_ERROR, DBG_PARAMS,"fd", 0, 0,
+			         "%s: parameter after rest parameter", name);
+			break;
+			}
+		sym_set_value(p->name, p->init, local);   /* default, else exemplar */
 		if (p->is_rest)
-			f->is_rest = 1;
+			saw_rest = 1;
+		n++;
 		}
-	/* FIXME above should use accessors */
+	func_set_is_rest(f, saw_rest);
 	f->param_count = n;
-	diagnose(DIAG_DEBUG, DBG_GRAMMAR, 0, 0, "defined %s with %d params", name, n);
-	sym_define_function(name, f, scope);
+	diagnose(DIAG_DEBUG, DBG_GRAMMAR,"fd", 0, 0, "defined %s with %d params in enclosing:%p", name, n, (void *)enclosing);
+	sym_define_function(name, f, enclosing->outer?enclosing->outer:enclosing);
 	return f;
 	}
 
@@ -109,7 +131,11 @@ void func_add_param(struct func *f, const char *name, struct value init) /* def 
 int
 func_param_count(const struct func *f) /* def */
 	{
-	return f ? f->param_count : 0;
+	int ret = 0;
+	show_func( (struct func *) f, "fpc", 0);
+	if(f && f->params)
+		ret = f->param_count;
+	return(ret);
 	}
 
 const char *

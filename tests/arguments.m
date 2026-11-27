@@ -2,7 +2,7 @@ the args are 1 and 2 and "three".
 the blargs are "Point 1" and "b" and "pt three".
 
  #list argument defaults to empty
- TO show the argues are empty  MEANS TO
+TO show the argues are empty  MEANS TO
 DO
 	print "s[" and the argues and "]" .
 DONE.
@@ -14,7 +14,7 @@ DO
 DONE.
 
 prove.
-#prove: too few arguments (got 0, need 1)
+##prove: too few arguments (got 0, need 1)
 show.
 #s[ ]
 show empty.

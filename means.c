@@ -52,10 +52,10 @@ int main(int argc, char *argv[])
 	char *outfile = NULL;
 	int opt;
 
-	diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0,
+	diagnose(DIAG_DEBUG, DBG_EXEC,"m", 0, 0,
 	         "ST_CALL=%d ST_RETURN=%d ST_BLOCK=%d\n",
 	         ST_CALL, ST_RETURN, ST_BLOCK);
-	diagnose(DIAG_DEBUG, DBG_GETOPT, 0, 0, "optstring: %s\n", optstring);
+	diagnose(DIAG_DEBUG, DBG_GETOPT, "m", 0, 0, "optstring: %s\n", optstring);
 
 	while ((opt = getopt(argc, argv, optstring)) != -1)
 		{
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 				yyin = fopen(optarg, "r");
 				if (!yyin)
 					{
-					diagnose(DIAG_ERROR, DBG_STDIO, 0, 0,
+					diagnose(DIAG_ERROR, DBG_STDIO, "m", 0, 0,
 					         "cannot open %s", optarg);
 					return 1;
 					}
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 		{
 		if (freopen(outfile, "w", stdout) == NULL)
 			{
-			diagnose(DIAG_ERROR, DBG_STDIO, 0, 0,
+			diagnose(DIAG_ERROR, DBG_STDIO,"m", 0, 0,
 			         "cannot open output %s", outfile);
 			return 1;
 			}
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 		yyin = fopen(argv[optind], "r");
 		if (!yyin)
 			{
-			diagnose(DIAG_ERROR, DBG_STDIO, 0, 0,
+			diagnose(DIAG_ERROR, DBG_STDIO,"m", 0, 0,
 			         "cannot open %s", argv[optind]);
 			return 1;
 			}

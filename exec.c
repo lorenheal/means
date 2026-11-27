@@ -31,43 +31,46 @@ build_arguments_list(struct argnode *args, struct scope *scope) /* def */
 static struct value *
 eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out) /* def */
 	{
-	struct value *ret;
+	struct value *ret = NULL;
 	int n = 0;
 	struct argnode *a;
 	/**/
 	if(!args)
 		{
-		args = arglist_new(ev_list(NULL));
+		n = 0;
 		}
-	else if(!argnode_next(args)) /* only one item */
+	else 
 		{
-		/* single node: if its expression is not already a list, wrap it */
-		struct expr *e = args->expr;
-		if (e->etype != EV_LIST)
+		if(!argnode_next(args)) /* only one item */
 			{
-			struct argnode *one = arglist_new(e);
-			args = one;
+			/* single node: if its expression is not already a list, wrap it */
+			struct expr *e = args->expr;
+			if (e->etype != EV_LIST)
+				{
+				struct argnode *one = arglist_new(e);
+				args = one;
+				}
 			}
-		}
-		/* else it is already a list; keep it */
-		/* multi-node arglist (the AND form) is already correct */
-	for (a = args; a; a = argnode_next(a))
-		n++;
-	ret = calloc(n, sizeof *ret);
-	if (!ret)
-		{
-		*argc_out = 0;
-		/* FIXME diagnose memory error; FIXME more: argnode_new()  */
-		}
-	else
-		{
-		int i = 0;
-		for (a = args; a; a = argnode_next(a), i++)
+			/* else it is already a list; keep it */
+			/* multi-node arglist (the AND form) is already correct */
+		for (a = args; a; a = argnode_next(a))
+			n++;
+		ret = calloc(n, sizeof *ret);
+		if (!ret)
 			{
-			ret[i] = eval_expr(a->expr, scope);
-			diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "eafm: arg[%d] etype=%d vtype=%d lval=%p",
-			         i, a->expr->etype, ret[i].vtype,
-			         (ret[i].vtype == T_LIST) ? (void *)ret[i].lval : NULL);
+			*argc_out = 0;
+			/* FIXME diagnose memory error; FIXME more: argnode_new()  */
+			}
+		else
+			{
+			int i = 0;
+			for (a = args; a; a = argnode_next(a), i++)
+				{
+				ret[i] = eval_expr(a->expr, scope);
+				diagnose(DIAG_DEBUG, DBG_EXEC, "eafm", 0, 0, "arg[%d] etype=%d vtype=%d lval=%p",
+						 i, a->expr->etype, ret[i].vtype,
+						 (ret[i].vtype == T_LIST) ? (void *)ret[i].lval : NULL);
+				}
 			}
 		}
 	*argc_out = n;
@@ -96,25 +99,28 @@ call_func(const char *name, struct argnode *args, struct scope *scope) /* def */
 	{
 	int argc = 0;
 	struct value *argv = eval_args_for_match(args, scope, &argc);
-	struct func *f = NULL;
-	match_result mr = MATCH_TYPE_MISMATCH;
-	struct value arguments = Value_Empty();
-	struct scope *local = NULL;
+	match_result mr = MATCH_NULL_FUNC;
+	struct func *f = find_matching_func(name, argv, argc, scope, &mr);
 	struct value result = Value_Empty();
-	int i;
-	struct func *last = NULL;
-	f = find_matching_func(name, argv, argc, scope, &mr);
-	diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "cf: match %s %d mr: %d\n", 
-		((f && f->name)?(f->name):("(null)")), argc, mr);
+	diagnose(DIAG_DEBUG, DBG_EXEC, "cf", 0, 0, "match %s %d mr: %d",
+	         (f && f->name) ? f->name : "(null)", argc, mr);
 	if (f)
 		{
+		struct scope *lex = func_lexical_scope(f);
+		struct scope *parent = lex->outer;
+		struct scope *local = scope_new(func_name(f), lex);
+		if (parent)
+			parent->activation = local;
+		else
+			lex->activation = local;
+		if(DEBUG(DBG_EXEC)) dump_chain(local,0);
+		struct value arguments = Value_Empty();
 		if (argc > 0)
 			{
 			arguments = Value_List(list_new());
-			for (i = 0; i < argc; i++)
+			for (int i = 0; i < argc; i++)
 				list_append(argv[i], Value_AsList(arguments));
 			}
-		local = scope_new(func_name(f), func_lexical_scope(f));
 		sym_set_value("arguments", arguments, local);
 		if (func_param_count(f) > 0)
 			bind_fixed_params(f, arguments, local);
@@ -122,12 +128,18 @@ call_func(const char *name, struct argnode *args, struct scope *scope) /* def */
 			result = func_builtin(f)(local);
 		else
 			result = exec_stmts(func_body(f), local);
+		if(parent)
+			parent->activation = NULL;
+		else
+			lex->activation = NULL;
 		Value_Free(arguments);
 		scope_free(local);
 		}
 	else
-		report_match_failure(name, mr, last, argc);
-	for (i = 0; i < argc; i++)
+		{
+		report_match_failure(name, mr, NULL, argc);
+		}
+	for (int i = 0; i < argc; i++)
 		Value_Free(argv[i]);
 	free(argv);
 	return result;
@@ -171,10 +183,10 @@ eval_expr(struct expr *e, struct scope *scope) /* def */
 			struct sym *s = sym_find(e->name, scope);
 			if (!s)
 				{
-				diagnose(DIAG_ERROR,DBG_EXEC,e->line,0, "undefined variable: %s\n", e->name);
+				diagnose(DIAG_ERROR,DBG_EXEC,"exv1",e->line,0, "undefined variable: %s\n", e->name);
 				return z;
 				}
-			diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0, "lookup %s type %d", e->name, Value_Type(s->val));
+			diagnose(DIAG_DEBUG, DBG_EXEC,"exv2", 0, 0, "lookup %s type %d", e->name, Value_Type(s->val));
 			return Value_Copy(s->val);
 			}
 		case EV_BINOP:
@@ -205,7 +217,7 @@ eval_expr(struct expr *e, struct scope *scope) /* def */
 					enum vtype rt = result_type(l, r);
 					if (rt == T_UNTYPED)
 						{
-						diagnose(DIAG_ERROR, DBG_EXEC, e->line, 0,
+						diagnose(DIAG_ERROR, DBG_EXEC,"exb", e->line, 0,
 						         "non-numeric operands for operator");
 						break;
 						}
@@ -227,7 +239,7 @@ eval_expr(struct expr *e, struct scope *scope) /* def */
 							break;
 						case OVER:
 							if (rd == 0.0)
-								diagnose(DIAG_WARNING, DBG_USER, e->line, 0, "division by zero");
+								diagnose(DIAG_WARNING, DBG_USER,"exb", e->line, 0, "division by zero");
 							res = (rd != 0.0) ? ld / rd : 0.0;
 							break;
 						case GREATER_THAN:
@@ -255,7 +267,7 @@ eval_expr(struct expr *e, struct scope *scope) /* def */
 							is_comparison = 1;
 							break;
 						default:
-							diagnose(DIAG_ERROR, DBG_EXEC, e->line, 0, "unknown operator");
+							diagnose(DIAG_ERROR, DBG_EXEC,"exb", e->line, 0, "unknown operator");
 							break;
 						}
 
@@ -299,7 +311,7 @@ exec_stmts(struct stmt *s, struct scope *scope) /* def */
 	struct value result = Value_Empty();
 	while (s)
 		{
-		diagnose(DIAG_DEBUG,DBG_EXEC,0,0,"exec stype=%d\n", s->stype);
+		diagnose(DIAG_DEBUG,DBG_EXEC,"es",0,0,"stype=%d\n", s->stype);
 		switch (s->stype)
 			{
 			case ST_ASSIGN:
@@ -312,8 +324,8 @@ exec_stmts(struct stmt *s, struct scope *scope) /* def */
 			case ST_CALL:
 				{
 				struct value r = call_func(s->name, s->args, scope);
-				diagnose(DIAG_DEBUG, DBG_EXEC, 0, 0,
-				         "ST_CALL received empty=%d\n", Value_IsEmpty(r));
+				diagnose(DIAG_DEBUG, DBG_EXEC,"esc", 0, 0,
+				         "received empty=%d\n", Value_IsEmpty(r));
 				Value_Free(r);
 				break;
 				}

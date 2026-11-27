@@ -18,6 +18,8 @@ enum etype
 	EV_BINOP,
 	EV_CALL
 	};
+	
+struct etypename { enum etype etype; char *name; };
 
 enum stype
 	{
@@ -91,3 +93,4 @@ void print_stmts(struct stmt *s);
 
 
 #endif /* AST_H */
+

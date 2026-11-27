@@ -1,8 +1,8 @@
 To foo the extra is 0  means to do
 	the local is 3.
-	return the local and the extra.
+	return the local plus the extra.
 done.
 print foo 4. 
-#3 4
+#7
 print foo.
-#3 0
+#3

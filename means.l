@@ -28,6 +28,7 @@
 "are"              { RETURN(ARE); }
 "like"             { RETURN(LIKE); }
 "if"               { RETURN(IF); }
+"by"               { RETURN(BY); }
 "while"            { RETURN(WHILE); }
 "else"             { RETURN(ELSE); }
 "to"               { RETURN(TO); }
@@ -54,11 +55,6 @@
 "exclusive or"     { RETURN(EXCLUSIVE_OR); }
 "quantity"         { RETURN(QUANTITY); }
 "end"              { RETURN(END); }
-"list"             { yylval.ival = T_LIST; RETURN( TYPENAME); }
-"number"           { yylval.ival = T_NUMBER; RETURN( TYPENAME); }
-"word"             { yylval.ival = T_WORD; RETURN( TYPENAME); }
-"decimal"          { yylval.ival = T_DECIMAL; RETURN( TYPENAME); }
-"boolean"          { yylval.ival = T_BOOL; RETURN( TYPENAME); }
 "true"             { yylval.ival = 1; RETURN( BOOLVAL); }
 "false"            { yylval.ival = 0; RETURN( BOOLVAL); }
 "."                { RETURN( DOT); }

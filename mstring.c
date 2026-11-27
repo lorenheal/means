@@ -53,7 +53,7 @@ struct mstring *mstring_new(const char *s)
 		}
 	else
 		{
-		diagnose(DIAG_FATAL,DBG_MSTRING,0,0,"mem error in mstring_new");
+		diagnose(DIAG_FATAL,DBG_MSTRING,"mn",0,0,"mem error in mstring_new");
 		exit(1); /* unreachable */
 		}
 	return m;
