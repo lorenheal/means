@@ -15,7 +15,7 @@ if the x greater than 1 then
 	DO
 		print "block".
 		print "still in block".
-	DONE
+	DONE.
 #block
 #still in block
  # nested if

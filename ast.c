@@ -19,7 +19,7 @@ struct etypename etypenames[] =
 	};
 
 static struct stmt *
-stmt_new(enum stype st)
+stmt_new(enum stype st) /* def */
 	{
 	struct stmt *s = calloc(1, sizeof *s);
 	if (!s)
@@ -33,7 +33,7 @@ stmt_new(enum stype st)
 	}
 
 struct expr *
-expr_new(enum etype et)
+expr_new(enum etype et) /* def */
 	{
 	struct expr *e = calloc(1, sizeof *e);
 	if (!e)
@@ -47,7 +47,7 @@ expr_new(enum etype et)
 	}
 
 struct stmt *
-stmt_append_list(struct stmt *list, struct stmt *s)
+stmt_append_list(struct stmt *list, struct stmt *s) /* def */
 	{
 	if (!s)
 		return list;
@@ -61,7 +61,7 @@ stmt_append_list(struct stmt *list, struct stmt *s)
 	}
 
 struct stmt *
-stmt_block(struct stmt *body)
+stmt_block(struct stmt *body) /* def */
 	{
 	struct stmt *s = stmt_new(ST_BLOCK);
 	s->body = body;
@@ -69,7 +69,7 @@ stmt_block(struct stmt *body)
 	}
 
 struct stmt *
-stmt_assign(char *name, struct expr *expr, int is_const)
+stmt_assign(char *name, struct expr *expr, int is_const) /* def */
 	{
 	struct stmt *s = stmt_new(ST_ASSIGN);
 	s->name = name;
@@ -79,7 +79,7 @@ stmt_assign(char *name, struct expr *expr, int is_const)
 	}
 
 struct stmt *
-stmt_return(struct argnode *args)
+stmt_return(struct argnode *args) /* def */
 	{
 	struct stmt *s = stmt_new(ST_RETURN);
 	s->args = args;
@@ -87,7 +87,7 @@ stmt_return(struct argnode *args)
 	}
 
 struct stmt *
-stmt_if(struct expr *cond, struct stmt *thenb, struct stmt *elseb)
+stmt_if(struct expr *cond, struct stmt *thenb, struct stmt *elseb) /* def */
 	{
 	struct stmt *s = stmt_new(ST_IF);
 	s->expr = cond;
@@ -97,7 +97,7 @@ stmt_if(struct expr *cond, struct stmt *thenb, struct stmt *elseb)
 	}
 
 struct stmt *
-stmt_while(struct expr *cond, struct stmt *body)
+stmt_while(struct expr *cond, struct stmt *body) /* def */
 	{
 	struct stmt *s = stmt_new(ST_WHILE);
 	s->expr = cond;
@@ -106,7 +106,7 @@ stmt_while(struct expr *cond, struct stmt *body)
 	}
 
 struct stmt *
-stmt_call(char *name, struct argnode *args)
+stmt_call(char *name, struct argnode *args) /* def */
 	{
 	struct stmt *s = stmt_new(ST_CALL);
 	s->name = name;
@@ -114,7 +114,7 @@ stmt_call(char *name, struct argnode *args)
 	return s;
 	}
 
-struct argnode *pack_if_multi(struct argnode *args)
+struct argnode *pack_if_multi(struct argnode *args) /* def */
 	{
 	int n = 0;
 	for (struct argnode *a = args; a; a = argnode_next(a))
@@ -126,7 +126,7 @@ struct argnode *pack_if_multi(struct argnode *args)
 	}
 
 struct expr *
-ev_binop(int op, struct expr *left, struct expr *right)
+ev_binop(int op, struct expr *left, struct expr *right) /* def */
 	{
 	struct expr *e = expr_new(EV_BINOP);
 	e->op = op;
@@ -136,7 +136,7 @@ ev_binop(int op, struct expr *left, struct expr *right)
 	}
 
 struct expr *
-ev_number(int ival)
+ev_number(int ival) /* def */
 	{
 	struct expr *e = expr_new(EV_NUM);
 	e->val = Value_Number(ival);
@@ -144,7 +144,7 @@ ev_number(int ival)
 	}
 
 struct expr *
-ev_decimal(float fval)
+ev_decimal(float fval) /* def */
 	{
 	struct expr *e = expr_new(EV_NUM);
 	e->val = Value_Decimal(fval);
@@ -152,7 +152,7 @@ ev_decimal(float fval)
 	}
 
 struct expr *
-ev_word(char *s)
+ev_word(char *s) /* def */
 	{
 	struct expr *e = expr_new(EV_WORD);
 	e->val = Value_Word(s);
@@ -160,21 +160,21 @@ ev_word(char *s)
 	}
 
 struct expr *
-ev_bool(int b)
+ev_bool(int b) /* def */
 	{
 	struct expr *e = expr_new(EV_BOOL);
 	e->val = Value_Bool(b);
 	return e;
 	}
 
-struct expr *ev_list(struct argnode *nodes)
+struct expr *ev_list(struct argnode *nodes) /* def */
 	{
 	struct expr *e = expr_new(EV_LIST);   /* new etype */
 	e->args = nodes;                      /* reuse the existing argnode chain */
 	return e;
 	}
 struct expr *
-ev_var(char *name)
+ev_var(char *name) /* def */
 	{
 	struct expr *e = expr_new(EV_VAR);
 	e->name = name;
@@ -182,7 +182,7 @@ ev_var(char *name)
 	}
 
 struct expr *
-ev_call(char *name, struct argnode *args)
+ev_call(char *name, struct argnode *args) /* def */
 	{
 	struct expr *e = expr_new(EV_CALL);
 	e->name = name;
@@ -192,29 +192,29 @@ ev_call(char *name, struct argnode *args)
 
 /* for tree walking */
 /* in ast.c — one-liners */
-struct expr *expr_left(const struct expr *e)
+struct expr *expr_left(const struct expr *e) /* def */
 	{
 	return e ? e->left  : NULL;
 	}
-struct expr *expr_right(const struct expr *e)
+struct expr *expr_right(const struct expr *e) /* def */
 	{
 	return e ? e->right : NULL;
 	}
-struct stmt *stmt_body(const struct stmt *s)
+struct stmt *stmt_body(const struct stmt *s) /* def */
 	{
 	return s ? s->body  : NULL;
 	}
-struct stmt *stmt_else(const struct stmt *s)
+struct stmt *stmt_else(const struct stmt *s) /* def */
 	{
 	return s ? s->else_body : NULL;
 	}
-struct stmt *stmt_next(const struct stmt *s)
+struct stmt *stmt_next(const struct stmt *s) /* def */
 	{
 	return s ? s->next  : NULL;
 	}
 
 void
-free_expr(struct expr *e)
+free_expr(struct expr *e) /* def */
 	{
 	if (!e) return;   /* WARN: args chain not freed */
 	free_expr(expr_left(e));
@@ -226,7 +226,7 @@ free_expr(struct expr *e)
 	}
 
 void
-free_stmts(struct stmt *s)
+free_stmts(struct stmt *s) /* def */
 	{
 	while (s)
 		{
@@ -242,7 +242,7 @@ free_stmts(struct stmt *s)
 	}
 
 void
-print_expr(struct expr *e)
+print_expr(struct expr *e) /* def */
 	{
 	if (!e)
 		return;
@@ -274,7 +274,7 @@ print_expr(struct expr *e)
 	}
 
 void
-print_stmts(struct stmt *s)
+print_stmts(struct stmt *s) /* def */
 	{
 	while (s)
 		{

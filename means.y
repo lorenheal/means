@@ -224,12 +224,12 @@ primary
     ;
 
 call_expr
-    : BY IDENT           
-        { $$ = ev_call($2, NULL); }
-    | BY IDENT expr
-        { $$ = ev_call($2, arglist_new($3)); }
-    | BY IDENT expr_list
-        { $$ = ev_call($2, $3); }
+    : IDENT           
+        { $$ = ev_call($1, NULL); }
+    | IDENT expr
+        { $$ = ev_call($1, arglist_new($2)); }
+    | IDENT expr_list
+        { $$ = ev_call($1, $2); }
     ;
 
 %%

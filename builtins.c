@@ -228,7 +228,7 @@ static struct value builtin_newline(struct scope *scope)
 	}
 
 static struct value
-builtin_length(struct scope *scope)
+builtin_length(struct scope *scope) /* def */
 	{
 	struct value item = sym_value(sym_find_in_scope("_length_1", scope));
 	struct value ret  = Value_Empty();
@@ -430,9 +430,26 @@ static struct value builtin_insert(struct scope *scope)
 
 static struct value builtin_push(struct scope *scope)
 	{
-	return builtin_insert(scope);
+	struct value small = sym_get_value("_push_1", scope);
+	struct value cont  = sym_get_value("_push_2", scope);
+	struct value ret   = Value_Empty();
+	/**/
+	if (Value_Type(cont) == T_LIST)
+		{
+		struct list *lst = Value_AsList(cont);
+        diagnose(DIAG_DEBUG, DBG_LIST, "bpu", 0, 0, "cont type=%d lval=%p ref=%d",
+                 Value_Type(cont), (void *)lst, lst ? list_get_refcount(lst) : -1);
+		list_insert(small, Value_AsList(cont));
+		ret = Value_Copy(cont);
+		}
+	else if (Value_Type(cont) == T_WORD && Value_Type(small) == T_WORD)
+		{
+		const char *n = mstring_cstr(Value_AsWord(small));
+		mstring_insert(n, Value_AsWord(cont));
+		ret = cont;
+		}
+	return ret;
 	}
-
 static struct value builtin_pop(struct scope *scope)
 	{
 	struct value arg = sym_get_value("_pop_1", scope);
