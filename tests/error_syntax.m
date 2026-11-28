@@ -1,2 +1,2 @@
 the x is 5
-#line 3: syntax error
+#[yye:g] line 3: syntax error

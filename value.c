@@ -281,11 +281,10 @@ Value_IsTrue(struct value v) /* def */
 		}
 	}
 
-/* int Value_IsConstant(const struct value *v) { return v && v->is_const; } */ /* def */
+int Value_IsConstant(const struct value *v) { return v && v->is_const; } /* def */
 
-/* void value_set_constant(struct value *v) */ /* def */ /*
+void Value_Set_Constant(struct value *v)  /* def */ 
 	{ if (v) v->is_const = 1; }
-*/
 
 const char *Value_AsCstr(struct value *v) /* def */
 	{

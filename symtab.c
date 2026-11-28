@@ -149,8 +149,8 @@ sym_set_value(const char *name, struct value v, struct scope *scope) /* def */
 	struct sym *s = sym_find_in_scope(name, scope);
 	if(name && strcmp("x", name) == 0)
 		{
-		diagnose(DIAG_DEBUG, DBG_SYMTAB,"ssv", 0, 0,
-		         "x: set %s type %d found sym %p", name, Value_Type(v), (void *) s);
+		diagnose(DIAG_DEBUG, DBG_SYMTAB, "ssv", 0, 0,
+		         "x: set %s type %d found sym %p", name, (int) Value_Type(v), (void *) s);
 		}
 	if (!s)
 		{
@@ -159,9 +159,17 @@ sym_set_value(const char *name, struct value v, struct scope *scope) /* def */
 		s->next = scope->syms;
 		scope->syms = s;
 		}
-	Value_Free(s->val);
-	s->val = Value_Copy(v);
-	s->vtype = Value_Type(v);
+	if (s && Value_IsConstant(&(s->val)))
+		{
+		diagnose(DIAG_ERROR, DBG_SYMTAB, "ssv", 0, 0,
+		       "cannot assign to constant '%s'\n", name);
+		}
+	else
+		{
+		Value_Free(s->val);
+		s->val = Value_Copy(v);
+		s->vtype = Value_Type(v);
+		}
 	}
 
 struct value sym_value(struct sym *s) /* def */

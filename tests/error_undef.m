@@ -1,4 +1,3 @@
 print the nonexistent.
-##undefined variable: nonexistent
+#[exv1:x] line 1: undefined variable: nonexistent
 #
-#0

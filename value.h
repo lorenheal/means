@@ -31,7 +31,8 @@ struct value
 	struct mstring *mval;     /* owned C string when type == T_WORD */
 	struct list    *lval;     /* owned when type == T_LIST */
 	struct func    *fnval;     
-	int           initialized; /* Almost always 1; 0 for type but unassigned arguments */
+	int             is_const; /* constants can only be assigned to once  */
+	int             initialized; /* Almost always 1; 0 for type but unassigned arguments */
 	};
 
 char * value_fmt(char *buf, size_t n, struct value v);
@@ -39,6 +40,9 @@ char * value_fmt(char *buf, size_t n, struct value v);
 
 /**/
 int  Value_IsInit(struct value v);          /* 1 if the value may be used */
+int Value_IsConstant(const struct value *v); 
+void Value_Set_Constant(struct value *v); 
+
 struct value Value_Init(struct value v, int init);   /* uninitialized = 0, initialized = 1 */
 struct value Value_Uninit(struct value v);  /* makes v uninitialized  */
 struct value Value_Empty(void);

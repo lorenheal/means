@@ -5,7 +5,7 @@ the blargs are "Point 1" and "b" and "pt three".
  #number argument defaults to 0
 TO show the fid is 0 MEANS TO
 DO
-	print "[" and the fid and "]snd" .
+	print "s[" and the fid and "]snd" .
 DONE.
 
  #number argument required
@@ -21,17 +21,18 @@ DO
 DONE.
 
 prove.
-#prove: too few arguments (got 0, need 1)
+#[rmf0:p] match failure with null function (prove, argc 0)
 show.
 #s[ 0 ]snd
 show empty.
+#s[ ]slr
 prove empty.
-#p mistmatch
+#[rmf0:p] match failure with null function (prove, argc 1)
 show the args.
-#s mismatch
+#s[ 1 2 three ]slr
 show 3.
-#[ 3 ]   #s
+#s[ 3 ]slr
 prove 3.
-#[ 3 ]   #p
+#p[ 3 ]pnr
 show "word".
-#s: mismatch
+#s[ word ]slr

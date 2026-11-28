@@ -11,11 +11,11 @@ To subfunction means to do
 done.
 
 subfunction.
-##cannot assign to constant 'e'
+#[ssv:s] cannot assign to constant 'e'
 #
 #2.71828
 #3.14286
 The pi is 3.
-##cannot assign to constant 'pi'
+#[ssv:s] cannot assign to constant 'pi'
 #
 

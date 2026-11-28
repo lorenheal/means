@@ -35,11 +35,7 @@ eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out) /*
 	int n = 0;
 	struct argnode *a;
 	/**/
-	if(!args)
-		{
-		n = 0;
-		}
-	else 
+	if(args)
 		{
 		if(!argnode_next(args)) /* only one item */
 			{
@@ -73,6 +69,7 @@ eval_args_for_match(struct argnode *args, struct scope *scope, int *argc_out) /*
 				}
 			}
 		}
+		/* else args is NULL and n is 0. */
 	*argc_out = n;
 	return ret;
 	}
@@ -317,6 +314,7 @@ exec_stmts(struct stmt *s, struct scope *scope) /* def */
 			case ST_ASSIGN:
 				{
 				struct value v = eval_expr(s->expr, scope);
+				if (s->is_const) Value_Set_Constant(&v);
 				sym_set_value(s->name, v, scope);
 				Value_Free(v);
 				break;

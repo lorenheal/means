@@ -11,7 +11,7 @@ fortytwo.
 TO fortythree MEANS TO DO
 	return 43.
 DONE.
-print fortythree.
+print by fortythree.
 #43
 
  #
@@ -25,8 +25,8 @@ done.
 say "hi".
 #hi
  # side effect of say, not result.
-print say "lo".
-print bray "blo".
+print by say "lo".
+print by bray "blo".
 #lo
 #blo
 
